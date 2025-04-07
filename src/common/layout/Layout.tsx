@@ -124,7 +124,7 @@ const Layout = (props: ILayoutProps) => {
                 }),
               }}
             >
-              <Footer />
+              {/* <Footer /> */}
             </Box>
           </Stack>
         </Box>

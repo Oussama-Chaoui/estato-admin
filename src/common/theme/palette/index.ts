@@ -1,4 +1,4 @@
-import palette from '@common/theme/palette/green';
+import palette from '@common/theme/palette/gold';
 
 declare module '@mui/material/styles' {
   interface Theme {}

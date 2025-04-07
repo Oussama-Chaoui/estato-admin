@@ -144,9 +144,6 @@ const Topbar = () => {
         <Toolbar sx={{ px: { xs: 0, sm: 0 } }}>
           <Stack flexDirection="row" alignItems="center" flexGrow={1}>
             <Logo
-              id="topbar-logo"
-              onClick={() => router.push(Routes.Common.Home)}
-              sx={{ cursor: 'pointer' }}
             />
           </Stack>
           <List sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center' }}>
@@ -419,16 +416,6 @@ const Topbar = () => {
             width: 250,
           }}
         >
-          <Box
-            sx={{
-              padding: 4,
-              '.topbar-logo': {
-                width: '250px',
-              },
-            }}
-          >
-            <Logo id="responsive-topbar-logo" />
-          </Box>
           {navItems.map((item, index) => {
             if (item.label === 'Utilisateur') {
               return null;

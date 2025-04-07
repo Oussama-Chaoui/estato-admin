@@ -14,15 +14,14 @@ import { useRouter } from 'next/router';
 import Typography from '@mui/material/Typography';
 import useAuth from '@modules/auth/hooks/api/useAuth';
 import { useState, useEffect } from 'react';
-import Logo from '@common/assets/svgs/Logo';
 import Routes from '@common/defs/routes';
 import usePermissions from '@modules/permissions/hooks/usePermissions';
 import {
-  AccountCircle,
   AddRounded,
+  ArrowForwardIos,
   ChevronRight,
-  Close,
-  ExitToAppOutlined,
+  LogoutRounded,
+  Settings as SettingsIcon,
 } from '@mui/icons-material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { CRUD_ACTION, NavGroup, NavItem } from '@common/defs/types';
@@ -35,6 +34,9 @@ import {
   StyledSubheader,
 } from '@common/components/lib/navigation/Drawers/styled-drawer-items';
 import { useTranslation } from 'react-i18next';
+import { alpha } from '@mui/material/styles';
+import Image from 'next/image';
+import Logo from '@common/assets/svgs/Logo';
 
 interface LeftbarProps {
   open: boolean;
@@ -50,6 +52,10 @@ const Leftbar = (props: LeftbarProps) => {
   const [subNavItems, setSubNavItems] = useState<NavItem[]>();
   const { t } = useTranslation(['leftbar']);
   const open = props.open;
+  const [hoveredItem, setHoveredItem] = useState<{ groupIndex: number; itemIndex: number } | null>(
+    null
+  );
+
   const handleOpenSubDrawer = (items: NavItem[]) => {
     setSubNavItems(items);
   };
@@ -119,141 +125,222 @@ const Leftbar = (props: LeftbarProps) => {
         PaperProps={{
           sx: {
             width: LEFTBAR_WIDTH,
-            bgcolor: 'background.default',
+            bgcolor: 'background.paper',
             borderRightStyle: 'dashed',
             marginTop: 0.5,
-            px: 2.5,
+            px: 3,
+            overflow: 'hidden',
           },
         }}
         sx={{
           display: open ? 'block' : 'none',
         }}
       >
-        <NestedDrawer
-          open={subNavItems !== undefined && subNavItems.length > 0}
-          leftBarWidth={LEFTBAR_WIDTH}
-          navItems={subNavItems !== undefined && subNavItems.length > 0 ? subNavItems : []}
-          isMobile={isMobile}
-          router={router}
-          level={1}
-        />
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
+        <Box
           sx={{
-            py: 3,
-            marginBottom: 2,
-            borderBottomWidth: 1,
-            borderBottomColor: 'grey.300',
+            position: 'absolute',
+            bottom: -268,
+            left: '-2%',
+            transform: 'translateX(-50%)',
+            width: 611,
+            height: 500,
+            borderRadius: '50%',
+            border: `78px solid #F0F2F8`,
+            zIndex: 0,
+            pointerEvents: 'none',
           }}
-        >
-          <Stack direction="row" alignItems="center">
-            <Logo id="leftbar-logo" sx={{ marginRight: 2 }} />
-            <Typography variant="h6" sx={{ color: 'primary.main' }}>
-              {process.env.NEXT_PUBLIC_APP_TITLE}
-            </Typography>
-          </Stack>
+        />
 
-          <IconButton onClick={toggleLeftbar}>
-            <Close
-              sx={{
-                cursor: 'pointer',
-                transition: 'color 0.2s',
-                color: 'grey.700',
-              }}
-              fontSize="small"
-            />
-          </IconButton>
-        </Stack>
-        {user && (
-          <Box
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <NestedDrawer
+            open={subNavItems !== undefined && subNavItems.length > 0}
+            leftBarWidth={LEFTBAR_WIDTH}
+            navItems={subNavItems !== undefined && subNavItems.length > 0 ? subNavItems : []}
+            isMobile={isMobile}
+            router={router}
+            level={1}
+          />
+          <Stack
+            direction="row"
+            justifyContent="center"
+            alignItems="flex-end"
             sx={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: theme.spacing(2, 2.5),
-              borderRadius: theme.shape.borderRadius * 1.5 + 'px',
-              backgroundColor: 'action.hover',
-              mb: 5,
+              py: 3,
+              marginBottom: 2,
+              borderBottomWidth: 1,
+              borderBottomColor: 'grey.300',
             }}
           >
-            <AccountCircle fontSize="large" color="action" sx={{ mr: 1 }} />
-            <Box>
-              <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
-                {user.email}
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                {user.rolesNames[0]}
-              </Typography>
-            </Box>
-          </Box>
-        )}
-        <Box>
-          <List disablePadding>
-            {navEntries.map((entry, groupIndex) => (
-              <Box key={groupIndex}>
-                {entry.text && <StyledSubheader disableSticky>{entry.text}</StyledSubheader>}
-                {entry.items.map((item, itemIndex) => {
-                  let link = item.link;
-                  if (link.length > 1) {
-                    link = item.link.endsWith('/') ? item.link.slice(0, -1) : item.link;
-                  }
-                  return (
-                    <StyledLinkNavItem
-                      key={itemIndex}
-                      passHref
-                      href={link}
-                      className={`${router.pathname === link ? 'active' : ''}`}
-                    >
-                      <StyledListItemButton
-                        onMouseEnter={() => handleOpenSubDrawer(item.children || [])}
-                        disableGutters
+            <Logo isFullLogo onClick={() => router.push(Routes.Common.Home)} />
+          </Stack>
+          <Box sx={{ flex: 1, overflow: 'auto' }}>
+            <List>
+              {navEntries.map((entry, groupIndex) => (
+                <Box key={groupIndex}>
+                  {entry.text && <StyledSubheader disableSticky>{entry.text}</StyledSubheader>}
+                  {entry.items.map((item, itemIndex) => {
+                    let link = item.link;
+                    if (link.length > 1) {
+                      link = item.link.endsWith('/') ? item.link.slice(0, -1) : item.link;
+                    }
+                    const isActive = router.pathname === link;
+                    let iconToShow = item.icon;
+                    if (isActive) {
+                      iconToShow = item.icon;
+                    } else if (
+                      hoveredItem?.groupIndex === groupIndex &&
+                      hoveredItem?.itemIndex === itemIndex &&
+                      item.icon
+                    ) {
+                      iconToShow = item.icon;
+                    }
+                    return (
+                      <StyledLinkNavItem
+                        key={itemIndex}
+                        passHref
+                        href={link}
+                        className={isActive ? 'active' : ''}
+                        sx={{ display: 'flex', alignItems: 'center' }}
                       >
-                        <StyledListItemIcon>{item.icon}</StyledListItemIcon>
-                        <ListItemText disableTypography primary={item.text} />
-                        {item.suffix && (
-                          <Tooltip title={item.suffix.tooltip}>
-                            <IconButton
-                              size="small"
-                              // on click, stoppropagation to avoid triggering the parent link
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                if (item.suffix) {
-                                  router.push(item.suffix.link);
-                                }
-                              }}
-                            >
-                              {item.suffix.icon}
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                        {item.children && item.children.length > 0 && <ChevronRight />}
-                      </StyledListItemButton>
-                    </StyledLinkNavItem>
-                  );
-                })}
+                        <StyledListItemButton
+                          onMouseEnter={() => {
+                            handleOpenSubDrawer(item.children || []);
+                            setHoveredItem({ groupIndex, itemIndex });
+                          }}
+                          onMouseLeave={() => setHoveredItem(null)}
+                          disableGutters
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            px: 2,
+                            gap: 2,
+                            '&:hover': {
+                              background: `linear-gradient(0deg, ${alpha(
+                                theme.palette.primary.main,
+                                0.8
+                              )}, ${alpha(theme.palette.primary.dark, 0.7)})`,
+                              color: '#fff',
+                            },
+                            '&:hover .MuiListItemText-root': {
+                              color: '#fff',
+                            },
+                            '.active &': {
+                              background: `linear-gradient(0deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                              color: '#fff',
+                            },
+                          }}
+                        >
+                          <StyledListItemIcon
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              mr: 0,
+                            }}
+                          >
+                            {iconToShow}
+                          </StyledListItemIcon>
+                          <ListItemText
+                            primary={item.text}
+                            sx={{ color: isActive ? '#fff' : 'grey.500' }}
+                          />
+                          {item.suffix && (
+                            <Tooltip title={item.suffix.tooltip}>
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  if (item.suffix) {
+                                    router.push(item.suffix.link);
+                                  }
+                                }}
+                                sx={{
+                                  color: 'inherit',
+                                  '& .MuiSvgIcon-root': {
+                                    fontSize: '1.25rem',
+                                  },
+                                }}
+                              >
+                                {item.suffix.icon}
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                          {item.children && item.children.length > 0 && <ChevronRight />}
+                        </StyledListItemButton>
+                      </StyledLinkNavItem>
+                    );
+                  })}
+                </Box>
+              ))}
+            </List>
+          </Box>
+
+          {user && (
+            <Box sx={{ mt: 'auto', mb: 2 }}>
+              <Box
+                sx={{
+                  mx: 'auto',
+                  mb: 4,
+                  mt: 5,
+                  pb: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1,
+                  position: 'relative',
+                  maxWidth: '150px',
+                }}
+              >
+                <Button
+                  onClick={() => router.push(Routes.Users.Me)}
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    color: 'grey.500',
+                    px: 2,
+                    '&:hover': {
+                      color: 'black',
+                    },
+                    letterSpacing: '0.5px',
+                    fontWeight: 500,
+                    '.MuiButton-startIcon': {
+                      justifyContent: 'center',
+                    },
+                  }}
+                  startIcon={<SettingsIcon />}
+                  variant="text"
+                >
+                  {t('leftbar:settings')}
+                </Button>
+                <Button
+                  onClick={() => {
+                    router.push(Routes.Common.Home);
+                    logout();
+                  }}
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    color: 'grey.500',
+                    px: 2,
+                    '&:hover': {
+                      color: 'black',
+                    },
+                    letterSpacing: '0.5px',
+                    fontWeight: 500,
+                    '.MuiButton-startIcon': {
+                      justifyContent: 'center',
+                    },
+                  }}
+                  startIcon={<LogoutRounded />}
+                  variant="text"
+                >
+                  {t('leftbar:logout')}
+                </Button>
               </Box>
-            ))}
-          </List>
+            </Box>
+          )}
         </Box>
-        {user && (
-          <Button
-            color="error"
-            onClick={() => {
-              router.push(Routes.Common.Home);
-              logout();
-            }}
-            sx={{
-              display: 'flex',
-              marginTop: 4,
-            }}
-            startIcon={<ExitToAppOutlined />}
-            variant="text"
-          >
-            {t('leftbar:logout')}
-          </Button>
-        )}
       </Drawer>
       {!open && (
         <Box
@@ -261,10 +348,7 @@ const Leftbar = (props: LeftbarProps) => {
             position: 'absolute',
             display: 'flex',
             top: 6,
-            left: {
-              xs: 6,
-              sm: 14,
-            },
+            left: { xs: 6, sm: 14 },
           }}
         >
           <IconButton

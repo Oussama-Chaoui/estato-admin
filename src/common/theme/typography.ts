@@ -1,9 +1,8 @@
 import { Palette } from '@mui/material';
 import { TypographyOptions } from '@mui/material/styles/createTypography';
-// eslint-disable-next-line camelcase
-import { Public_Sans } from '@next/font/google';
+import { Montserrat } from '@next/font/google';
 
-const publicSans = Public_Sans({
+const montserrat = Montserrat({
   weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
   subsets: ['latin'],
   style: ['normal', 'italic'],
@@ -26,7 +25,7 @@ export const responsiveFontSizes = ({ sm, md, lg }: { sm: number; md: number; lg
 });
 
 const typography: TypographyOptions | ((palette: Palette) => TypographyOptions) = {
-  fontFamily: `${publicSans.style.fontFamily}, sans-serif`,
+  fontFamily: `${montserrat.style.fontFamily}, sans-serif`,
   fontWeightRegular: 400,
   fontWeightMedium: 600,
   fontWeightBold: 700,
