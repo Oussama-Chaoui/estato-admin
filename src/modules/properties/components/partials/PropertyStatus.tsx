@@ -1,13 +1,16 @@
 // PropertyStatus.tsx
 import React from 'react';
-import { Chip, ChipProps } from '@mui/material';
+import { Chip } from '@mui/material';
 import { PROPERTY_STATUS } from '@modules/properties/defs/types';
 
 interface PropertyStatusProps {
   status: PROPERTY_STATUS;
 }
 
-const statusStyles: Record<PROPERTY_STATUS, { bgColor: string, textColor: string, icon?: JSX.Element }> = {
+const statusStyles: Record<
+  PROPERTY_STATUS,
+  { bgColor: string; textColor: string; icon?: JSX.Element }
+> = {
   [PROPERTY_STATUS.FOR_SALE]: {
     bgColor: 'success.light',
     textColor: 'grey.900',

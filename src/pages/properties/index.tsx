@@ -2,7 +2,6 @@ import withAuth, { AUTH_MODE } from '@modules/auth/hocs/withAuth';
 import withPermissions from '@modules/permissions/hocs/withPermissions';
 import { NextPage } from 'next';
 import Routes from '@common/defs/routes';
-import UsersTable from '@modules/users/components/partials/UsersTable';
 import CustomBreadcrumbs from '@common/components/lib/navigation/CustomBreadCrumbs';
 import { useRouter } from 'next/router';
 import { Add } from '@mui/icons-material';
@@ -44,7 +43,13 @@ const PropertiesPage: NextPage = () => {
 
 export const getStaticProps = async ({ locale }: { locale: string }) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['topbar', 'footer', 'leftbar', 'property', 'common'])),
+    ...(await serverSideTranslations(locale, [
+      'topbar',
+      'footer',
+      'leftbar',
+      'property',
+      'common',
+    ])),
   },
 });
 

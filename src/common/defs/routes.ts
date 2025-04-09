@@ -13,7 +13,7 @@ const Routes = {
   Auth,
   Permissions,
   Users,
-  Properties
+  Properties,
 };
 
 export default Routes;

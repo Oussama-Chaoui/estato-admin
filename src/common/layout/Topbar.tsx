@@ -2,7 +2,6 @@ import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 import Routes from '@common/defs/routes';
 import {
   AppBar,
-  Box,
   Button,
   Container,
   Drawer,
@@ -143,8 +142,7 @@ const Topbar = () => {
       <Container>
         <Toolbar sx={{ px: { xs: 0, sm: 0 } }}>
           <Stack flexDirection="row" alignItems="center" flexGrow={1}>
-            <Logo
-            />
+            <Logo />
           </Stack>
           <List sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center' }}>
             <>

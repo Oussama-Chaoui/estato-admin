@@ -22,4 +22,4 @@ export interface Agent extends CrudObject {
 export type Language = {
   id: Id;
   name: string;
-}
+};

@@ -7,12 +7,9 @@ import PageHeader from '@common/components/lib/partials/PageHeader';
 import CustomBreadcrumbs from '@common/components/lib/navigation/CustomBreadCrumbs';
 import { useEffect, useState } from 'react';
 import useProgressBar from '@common/hooks/useProgressBar';
-import { User } from '@modules/users/defs/types';
-import useUsers from '@modules/users/hooks/api/useUsers';
 import { CRUD_ACTION, Id } from '@common/defs/types';
 import Namespaces from '@common/defs/namespaces';
 import Labels from '@common/defs/labels';
-import UpdateUserForm from '@modules/users/components/partials/UpdateUserForm';
 import { useTranslation } from 'react-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import useProperties from '@modules/properties/hooks/api/useProperties';
@@ -44,7 +41,7 @@ const PropertiesPage: NextPage = () => {
     if (id) {
       const { data } = await readOne(id);
 
-      console.log(data)
+      console.log(data);
       if (data) {
         if (data.item) {
           setItem(data.item);
@@ -75,7 +72,13 @@ export const getStaticPaths = () => {
 
 export const getStaticProps = async ({ locale }: { locale: string }) => ({
   props: {
-    ...(await serverSideTranslations(locale, ['topbar', 'footer', 'leftbar', 'property', 'common'])),
+    ...(await serverSideTranslations(locale, [
+      'topbar',
+      'footer',
+      'leftbar',
+      'property',
+      'common',
+    ])),
   },
 });
 

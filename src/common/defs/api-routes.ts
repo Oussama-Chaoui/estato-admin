@@ -9,7 +9,7 @@ const ApiRoutes = {
   Users,
   Uploads,
   Posts,
-  Properties
+  Properties,
 };
 
 export default ApiRoutes;

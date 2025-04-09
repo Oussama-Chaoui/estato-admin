@@ -6,21 +6,21 @@ import Namespaces from '@common/defs/namespaces';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { Property, PROPERTY_STATUS, PROPERTY_TYPE } from '@modules/properties/defs/types';
-import useProperties, { CreateOneInput, UpdateOneInput } from '@modules/properties/hooks/api/useProperties';
+import useProperties, {
+  CreateOneInput,
+  UpdateOneInput,
+} from '@modules/properties/hooks/api/useProperties';
 import { Chip, Stack, Tooltip, useTheme, Box, Typography } from '@mui/material';
 import {
   KeyboardDoubleArrowUp,
   KeyboardDoubleArrowDown,
-  InfoOutlined,
   Public,
   Phone,
   EmailOutlined,
   Place,
-  AttachMoney,
   CircleNotifications,
   Category,
-  LocalOfferOutlined,
-  LocalOffer
+  LocalOffer,
 } from '@mui/icons-material';
 import { Agent, Language } from '@modules/users/defs/types';
 import PropertyStatus from './PropertyStatus';
@@ -40,13 +40,6 @@ interface Row extends CrudRow {
   agents: Agent[];
   amenities: any[];
 }
-
-const statusColors = {
-  for_sale: 'success',
-  rented: 'warning',
-  pending: 'info',
-  sold: 'error'
-};
 
 const PropertiesTable = () => {
   const { t, i18n } = useTranslation(['property']);
@@ -72,7 +65,7 @@ const PropertiesTable = () => {
       renderCell: (params) => {
         const locationValue = {
           city: params.row.location?.city || '',
-          address: params.row.streetAddress || ''
+          address: params.row.streetAddress || '',
         };
 
         return (
@@ -143,7 +136,6 @@ const PropertiesTable = () => {
                 </Typography>
               </Box>
             </Stack>
-
           </Box>
         );
       },
@@ -227,7 +219,10 @@ const PropertiesTable = () => {
                             justifyContent: 'center',
                           }}
                         >
-                          <Typography variant="caption" sx={{ color: 'text.primary', fontWeight: 600 }}>
+                          <Typography
+                            variant="caption"
+                            sx={{ color: 'text.primary', fontWeight: 600 }}
+                          >
                             {lang.name.slice(0, 2).toUpperCase()}
                           </Typography>
                         </Box>
@@ -408,8 +403,7 @@ const PropertiesTable = () => {
           </Box>
         );
       },
-    }
-
+    },
   ];
 
   const [translatedColumns, setTranslatedColumns] = useState<GridColumns<Row>>(columns);
@@ -433,7 +427,6 @@ const PropertiesTable = () => {
   });
 
   return (
-
     <ItemsTable<Property, CreateOneInput, UpdateOneInput, Row>
       namespace={Namespaces.Properties}
       routes={Routes.Properties}

@@ -3,7 +3,7 @@ import Properties from '@modules/properties/defs/labels';
 
 const Labels = {
   Users,
-  Properties
+  Properties,
 };
 
 export default Labels;

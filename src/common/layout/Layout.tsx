@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
-import Footer from './Footer';
 import Leftbar, { LEFTBAR_WIDTH } from './Leftbar';
 import Topbar from './Topbar';
 import Box from '@mui/material/Box';
@@ -21,7 +20,7 @@ const Layout = (props: ILayoutProps) => {
   const [display, setDisplay] = useState(true);
   const underMaintenance = process.env.NEXT_PUBLIC_UNDER_MAINTENANCE === 'true';
   const { t } = useTranslation('common');
-  const { user } = useAuth()
+  const { user } = useAuth();
 
   useEffect(() => {
     setDisplay(!underMaintenance);
@@ -90,17 +89,15 @@ const Layout = (props: ILayoutProps) => {
       >
         <Box sx={{ minHeight: '100vh', width: '100vw' }}>
           <Stack direction="column" sx={{ height: '100%' }}>
-            {user && (
-              <Leftbar open={openLeftbar} onToggle={(open) => setOpenLeftbar(open)} />
-            )}
+            {user && <Leftbar open={openLeftbar} onToggle={(open) => setOpenLeftbar(open)} />}
             <Topbar />
             <Box
               sx={{
                 display: 'flex',
                 flex: 1,
                 justifyContent: 'center',
-                marginLeft: (openLeftbar && user) ? LEFTBAR_WIDTH + 'px' : 0,
-                width: (openLeftbar && user) ? `calc(100% - ${LEFTBAR_WIDTH}px)` : '100%',
+                marginLeft: openLeftbar && user ? LEFTBAR_WIDTH + 'px' : 0,
+                width: openLeftbar && user ? `calc(100% - ${LEFTBAR_WIDTH}px)` : '100%',
               }}
             >
               <Container
@@ -120,8 +117,8 @@ const Layout = (props: ILayoutProps) => {
             </Box>
             <Box
               sx={{
-                marginLeft: (openLeftbar && user) ? LEFTBAR_WIDTH + 'px' : 0,
-                maxWidth: (openLeftbar && user) ? `calc(100% - ${LEFTBAR_WIDTH}px)` : '100%',
+                marginLeft: openLeftbar && user ? LEFTBAR_WIDTH + 'px' : 0,
+                maxWidth: openLeftbar && user ? `calc(100% - ${LEFTBAR_WIDTH}px)` : '100%',
                 transition: theme.transitions.create(['all'], {
                   easing: theme.transitions.easing.sharp,
                   duration: theme.transitions.duration.leavingScreen,

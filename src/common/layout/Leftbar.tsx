@@ -11,14 +11,12 @@ import {
 import Drawer from '@mui/material/Drawer';
 import Box from '@mui/material/Box';
 import { useRouter } from 'next/router';
-import Typography from '@mui/material/Typography';
 import useAuth from '@modules/auth/hooks/api/useAuth';
 import { useState, useEffect } from 'react';
 import Routes from '@common/defs/routes';
 import usePermissions from '@modules/permissions/hooks/usePermissions';
 import {
   AddRounded,
-  ArrowForwardIos,
   ChevronRight,
   LogoutRounded,
   Settings as SettingsIcon,
@@ -35,7 +33,6 @@ import {
 } from '@common/components/lib/navigation/Drawers/styled-drawer-items';
 import { useTranslation } from 'react-i18next';
 import { alpha } from '@mui/material/styles';
-import Image from 'next/image';
 import Logo from '@common/assets/svgs/Logo';
 
 interface LeftbarProps {
