@@ -46,6 +46,7 @@ export interface CrudLabels {
   ReadAll: string;
   Items: string;
   EditOne: string;
+  ReadOne?: string;
 }
 
 export interface NavGroup {

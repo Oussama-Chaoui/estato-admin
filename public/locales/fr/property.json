@@ -1,0 +1,10 @@
+{
+  "common": {
+    "create_new_one": "Créer une nouvelle propriété",
+    "edit_one": "Éditer la propriété",
+    "items": "Propriétés",
+    "new_one": "Nouvelle propriété",
+    "read_all": "Liste des propriétés",
+    "read_one": "Détails de la propriété"
+  }
+}

@@ -65,7 +65,7 @@ const ItemsTable = <Item, CreateOneInput, UpdateOneInput, Row extends CrudRow>(
     actions,
     noHeader,
     density = 'standard',
-    showLock,
+    showLock = false,
     customToolbar,
     exportable = false,
     filterModel: propFilterModel,
@@ -138,7 +138,7 @@ const ItemsTable = <Item, CreateOneInput, UpdateOneInput, Row extends CrudRow>(
         },
       };
 
-      if (actions || showLock) {
+      if (actions || showLock || props.showEdit || props.showDelete) {
         setColumns([...initColumns, actionsColumn]);
       } else {
         setColumns([...initColumns]);

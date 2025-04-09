@@ -165,7 +165,7 @@ const Leftbar = (props: LeftbarProps) => {
             justifyContent="center"
             alignItems="flex-end"
             sx={{
-              py: 3,
+              py: 4,
               marginBottom: 2,
               borderBottomWidth: 1,
               borderBottomColor: 'grey.300',
@@ -173,7 +173,7 @@ const Leftbar = (props: LeftbarProps) => {
           >
             <Logo isFullLogo onClick={() => router.push(Routes.Common.Home)} />
           </Stack>
-          <Box sx={{ flex: 1, overflow: 'auto' }}>
+          <Box sx={{ flex: 1, overflow: 'auto', mt: 2 }}>
             <List>
               {navEntries.map((entry, groupIndex) => (
                 <Box key={groupIndex}>
