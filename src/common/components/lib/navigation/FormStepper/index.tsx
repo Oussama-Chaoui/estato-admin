@@ -32,6 +32,7 @@ export interface FormStep<FORM_STEP_ID> {
   previousLabel?: string;
   nextLabel?: string;
 }
+
 interface FormStepperProps<FormData, FORM_STEP_ID> {
   id: string;
   steps: FormStep<FORM_STEP_ID>[];
@@ -42,12 +43,31 @@ interface FormStepperProps<FormData, FORM_STEP_ID> {
   endLabel?: string;
   sx?: SxProps<Theme>;
   vertical?: boolean;
+  initialData?: FormData;
 }
+
 const FormStepper = <FormData extends AnyObject, FORM_STEP_ID>({
   vertical = false,
   ...props
 }: FormStepperProps<FormData, FORM_STEP_ID>) => {
-  const { id, steps, onSubmit, abortLabel, previousLabel, nextLabel, endLabel, sx } = props;
+  const { id, steps, onSubmit, abortLabel, previousLabel, nextLabel, endLabel, sx, initialData } =
+    props;
+
+  const clearDraft = (draftId: string) => {
+    if (typeof window === 'undefined') return;
+    const key = 'steppers';
+    const raw = localStorage.getItem(key);
+    if (!raw) return;
+    try {
+      const arr: any[] = JSON.parse(raw);
+      const filtered = arr.filter((item) => item.id !== draftId);
+      localStorage.setItem(key, JSON.stringify(filtered));
+    } catch {
+      localStorage.removeItem(key);
+    }
+  };
+
+
   const [activeStepId, setActiveStepId] = useState<FORM_STEP_ID>(steps[0].id);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
@@ -72,7 +92,8 @@ const FormStepper = <FormData extends AnyObject, FORM_STEP_ID>({
         setActiveStepId(lastVisitedStepId);
       }
     }
-  }, [loaded]);
+  }, [loaded, lastVisitedStepId]);
+
   if (!activeStep) {
     router.push(Routes.Common.NotFound);
     return null;
@@ -102,6 +123,7 @@ const FormStepper = <FormData extends AnyObject, FORM_STEP_ID>({
         onSubmit(allData).then((success) => {
           if (success) {
             reset();
+            clearDraft(id);
           }
           setIsSubmitting(false);
         });
@@ -132,83 +154,88 @@ const FormStepper = <FormData extends AnyObject, FORM_STEP_ID>({
     }
     return isLastStep ? t('common:finish') : t('common:next');
   };
-  return (
-    <>
-      <Stack sx={sx} gap={4} flexDirection={vertical ? 'row' : 'column'}>
-        <Stepper
-          nonLinear
-          alternativeLabel={!vertical}
-          activeStep={steps.findIndex((s) => s.id === activeStepId)}
-          orientation={vertical ? 'vertical' : 'horizontal'}
-          sx={{ height: 'fit-content' }}
-        >
-          {steps.map((step) => (
-            <Step
-              key={step.id as string}
-              id={step.id as string}
-              completed={isStepCompleted(step.id)}
-              disabled={!isStepCompleted(step.id) && lastVisitedStepId !== step.id}
-            >
-              <StepButton
-                onClick={() => {
-                  setActiveStepId(step.id);
-                }}
-              >
-                <StepLabel>{step.label}</StepLabel>
-              </StepButton>
-            </Step>
-          ))}
-        </Stepper>
-        <Stack gap={4} flex={1}>
-          {loaded ? (
-            <activeStep.component
-              ref={formRef}
-              previous={onPrevious}
-              next={next}
-              data={getStepData(activeStep.id)}
-            />
-          ) : (
-            <Skeleton variant="rounded" height={200} />
-          )}
-          <Stack direction="row" alignItems="center">
-            {!isFirstStep && (
-              <Button
-                onClick={onPrevious}
-                variant="text"
-                startIcon={<ArrowBackIcon />}
-                disabled={isSubmitting}
-                sx={{
-                  paddingY: 1.5,
-                  paddingX: 2.5,
-                  color: 'error.main',
-                  backgroundColor: 'common.white',
-                  '&:hover': {
-                    backgroundColor: (theme) => alpha(theme.palette.error.main, 0.12),
-                  },
-                }}
-              >
-                {getPreviousLabel()}
-              </Button>
-            )}
 
+  const mergedStepData = {
+    ...((initialData as AnyObject) || {}),
+    ...getAllData(),
+  };
+
+  console.log("qzdqzdqzd", getAllData())
+  return (
+    <Stack sx={sx} gap={4} flexDirection={vertical ? 'row' : 'column'}>
+      <Stepper
+        nonLinear
+        alternativeLabel={!vertical}
+        activeStep={steps.findIndex((s) => s.id === activeStepId)}
+        orientation={vertical ? 'vertical' : 'horizontal'}
+        sx={{ height: 'fit-content' }}
+      >
+        {steps.map((step) => (
+          <Step
+            key={step.id as string}
+            id={step.id as string}
+            completed={isStepCompleted(step.id)}
+            disabled={!isStepCompleted(step.id) && lastVisitedStepId !== step.id}
+          >
+            <StepButton
+              onClick={() => {
+                setActiveStepId(step.id);
+              }}
+            >
+              <StepLabel>{step.label}</StepLabel>
+            </StepButton>
+          </Step>
+        ))}
+      </Stepper>
+      <Stack gap={4} flex={1}>
+        {loaded ? (
+          <activeStep.component
+            ref={formRef}
+            previous={onPrevious}
+            next={next}
+            data={mergedStepData}
+          />
+        ) : (
+          <Skeleton variant="rounded" height={200} />
+        )}
+        <Stack direction="row" alignItems="center">
+          {!isFirstStep && (
             <Button
-              type="submit"
-              variant="contained"
-              onClick={onNext}
+              onClick={onPrevious}
+              variant="text"
+              startIcon={<ArrowBackIcon />}
               disabled={isSubmitting}
               sx={{
                 paddingY: 1.5,
                 paddingX: 2.5,
-                marginLeft: 'auto',
+                color: 'error.main',
+                backgroundColor: 'common.white',
+                '&:hover': {
+                  backgroundColor: (theme) => alpha(theme.palette.error.main, 0.12),
+                },
               }}
-              endIcon={<ArrowForwardIcon />}
             >
-              {getNextLabel()}
+              {getPreviousLabel()}
             </Button>
-          </Stack>
+          )}
+
+          <Button
+            type="submit"
+            variant="contained"
+            onClick={onNext}
+            disabled={isSubmitting}
+            sx={{
+              paddingY: 1.5,
+              paddingX: 2.5,
+              marginLeft: 'auto',
+            }}
+            endIcon={<ArrowForwardIcon />}
+          >
+            {getNextLabel()}
+          </Button>
         </Stack>
       </Stack>
-    </>
+    </Stack>
   );
 };
 

@@ -59,11 +59,11 @@ export interface UseItemsHook<Item, CreateOneInput, UpdateOneInput> {
 
 export interface UseItemsOptions {
   fetchItems?: boolean;
-  pageSize?: number;
+  pageSize?: number | 'all';
 }
 export const defaultOptions = {
   fetchItems: false,
-  pageSize: 25,
+  pageSize: 25 as number | 'all',
 };
 
 export type UseItems<Item, CreateOneInput = Any, UpdateOneInput = Any> = (
@@ -76,8 +76,12 @@ const useItems = <Item, CreateOneInput, UpdateOneInput>(
 ): UseItemsHook<Item, CreateOneInput, UpdateOneInput> => {
   const fetchApi = useApi();
   const [shouldRefetch, setShouldRefetch] = useState(opts.fetchItems);
-  const [savedReadAllParams, setSavedReadAllParams] = useState<SavedReadAllParams | null>();
-
+  const [savedReadAllParams, setSavedReadAllParams] = useState<SavedReadAllParams>({
+    page: 1,
+    pageSize: opts.pageSize,
+    columnsSort: undefined,
+    filter: undefined,
+  });
   const { data, mutate } = useSWRImmutable<Item[] | null>(
     shouldRefetch ? apiRoutes.ReadAll : null,
     async (_url: string) => {

@@ -1,7 +1,8 @@
 import * as MuiIcons from '@mui/icons-material';
 import React from 'react';
+import type { SvgIconProps } from '@mui/material/SvgIcon';
 
-export const getAmenityIcon = (iconName: string): JSX.Element | null => {
+export const getAmenityIcon = (iconName: string, props?: SvgIconProps): JSX.Element | null => {
   const formattedName = iconName
     .split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -11,5 +12,5 @@ export const getAmenityIcon = (iconName: string): JSX.Element | null => {
     formattedName
   ];
 
-  return IconComponent ? <IconComponent /> : null;
+  return IconComponent ? <IconComponent {...props} /> : null;
 };

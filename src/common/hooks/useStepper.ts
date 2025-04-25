@@ -1,4 +1,4 @@
-import { AnyObject } from '@common/defs/types';
+import { Any, AnyObject } from '@common/defs/types';
 import { useEffect, useMemo, useState } from 'react';
 
 interface Step<STEP_ID> {
@@ -27,11 +27,13 @@ const useStepper = <Data extends AnyObject, STEP_ID>(id: string) => {
       const existingIndex = existingData.findIndex((item: Stepper<STEP_ID>) => item.id === id);
       if (existingIndex > -1) {
         setStepper(existingData[existingIndex]);
+      } else {
+        setStepper(defaultStepper);
       }
     } else {
       setStepper(defaultStepper);
     }
-  }, []);
+  }, [id]);
 
   useEffect(() => {
     if (stepper) {

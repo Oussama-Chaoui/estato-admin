@@ -1,6 +1,6 @@
 import Routes from '@common/defs/routes';
-import ItemsTable from '@common/components/partials/ItemsTable';
-import { CrudRow } from '@common/defs/types';
+import ItemsTable, { RowAction } from '@common/components/partials/ItemsTable';
+import { Any, CRUD_ACTION, CrudRow } from '@common/defs/types';
 import { GridColumns, GridRenderCellParams } from '@mui/x-data-grid';
 import Namespaces from '@common/defs/namespaces';
 import { useTranslation } from 'react-i18next';
@@ -21,29 +21,41 @@ import {
   CircleNotifications,
   Category,
   LocalOffer,
+  CalendarToday,
+  AccessTime,
+  InfoOutlined,
 } from '@mui/icons-material';
-import { Agent, Language } from '@modules/users/defs/types';
+import { Language } from '@modules/users/defs/types';
 import PropertyStatus from './PropertyStatus';
+import { useRouter } from 'next/router';
+import usePermissions from '@modules/permissions/hooks/usePermissions';
+import namespace from '@modules/properties/defs/namespace';
+import { Agent } from '@modules/agents/defs/types';
 
 interface Row extends CrudRow {
   title: string;
   streetAddress: string;
-  price: number;
-  currency: string;
+  salePrice: number;
+  monthlyPrice: number;
+  dailyPrice: number; currency: string;
   status: PROPERTY_STATUS;
+  monthlyPriceEnabled: boolean;
+  dailyPriceEnabled: boolean;
   createdAt: string;
   location: {
     city: string;
-    [key: string]: any;
+    [key: string]: Any;
   };
   type: PROPERTY_TYPE;
   agents: Agent[];
-  amenities: any[];
+  amenities: Any[];
 }
 
 const PropertiesTable = () => {
   const { t, i18n } = useTranslation(['property']);
   const theme = useTheme();
+  const router = useRouter();
+  const { can } = usePermissions();
 
   const columns: GridColumns<Row> = [
     {
@@ -60,7 +72,7 @@ const PropertiesTable = () => {
     {
       field: 'details',
       headerName: t('property:list.details'),
-      flex: 1.2,
+      flex: 1.5,
       minWidth: 100,
       renderCell: (params) => {
         const locationValue = {
@@ -101,27 +113,6 @@ const PropertiesTable = () => {
               <PropertyStatus status={params.row.status} />
             </Stack>
 
-            {/* Price with Icon */}
-            <Stack direction="row" alignItems="center" spacing={1.5}>
-              <LocalOffer fontSize="small" color="primary" />
-              <Chip
-                label={`${Number(params.row.price).toLocaleString()} ${params.row.currency}`}
-                size="small"
-                sx={{
-                  backgroundColor: 'primary.light',
-                  borderRadius: 16,
-                  fontWeight: 700,
-                  letterSpacing: 0.5,
-                  color: 'secondary.dark',
-                  '&:hover': {
-                    transform: 'translateY(-1px)',
-                    boxShadow: theme.shadows[1],
-                    backgroundColor: 'primary.main',
-                  },
-                }}
-              />
-            </Stack>
-
             {/* Location with Icon and Tooltip */}
             <Stack direction="row" alignItems="center" spacing={1.5}>
               <Place fontSize="small" color="primary" />
@@ -141,6 +132,62 @@ const PropertiesTable = () => {
       },
     },
     {
+      field: 'pricing',
+      headerName: t('property:list.pricing'),
+      flex: 1,
+      minWidth: 200,
+      renderCell: (params) => {
+        const {
+          salePrice,
+          monthlyPrice,
+          dailyPrice,
+          currency,
+          monthlyPriceEnabled,
+          dailyPriceEnabled,
+        } = params.row;
+
+        return (
+          <Stack direction="column" spacing={0.5}>
+            {/* Sale Price */}
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <LocalOffer fontSize="small" color="primary" />
+              <Typography variant="body2" fontWeight={600}>
+                {salePrice.toLocaleString()} {currency}
+              </Typography>
+            </Stack>
+
+            {/* Monthly Price */}
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <CalendarToday fontSize="small" color="primary" />
+              {monthlyPriceEnabled ? (
+                <Typography variant="body2" fontWeight={600}>
+                  {monthlyPrice.toLocaleString()} {currency}/mo
+                </Typography>
+              ) : (
+                <Typography variant="caption" color="textSecondary">
+                  {t('property:list.disabled')}
+                </Typography>
+              )}
+            </Stack>
+
+            {/* Daily Price */}
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <AccessTime fontSize="small" color="primary" />
+              {dailyPriceEnabled ? (
+                <Typography variant="body2" fontWeight={600}>
+                  {dailyPrice.toLocaleString()} {currency}/day
+                </Typography>
+              ) : (
+                <Typography variant="caption" color="textSecondary">
+                  {t('property:list.disabled')}
+                </Typography>
+              )}
+            </Stack>
+          </Stack>
+        );
+      },
+    },
+    {
       field: 'agents',
       headerName: t('property:list.agents'),
       flex: 1.1,
@@ -152,7 +199,7 @@ const PropertiesTable = () => {
             flexWrap: 'wrap',
             gap: 1,
             alignItems: 'center',
-            py: 1, // Add some vertical padding
+            py: 1,
             width: '100%',
           }}
         >
@@ -188,7 +235,7 @@ const PropertiesTable = () => {
                       <Typography variant="subtitle2" fontWeight={600}>
                         {agent.user.name}
                       </Typography>
-                      <Typography variant="caption">{agent.agancyName}</Typography>
+                      <Typography variant="caption">{agent.agencyName}</Typography>
                     </Box>
                   </Box>
 
@@ -277,7 +324,6 @@ const PropertiesTable = () => {
         </Box>
       ),
     },
-
     {
       field: 'amenities',
       headerName: t('property:list.amenities'),
@@ -404,6 +450,13 @@ const PropertiesTable = () => {
         );
       },
     },
+    {
+      field: 'createdAt',
+      headerName: 'Created at',
+      width: 120,
+      hide: true,         // keep it out of view
+      sortable: false,    // we’re sorting on the server anyway
+    },
   ];
 
   const [translatedColumns, setTranslatedColumns] = useState<GridColumns<Row>>(columns);
@@ -416,15 +469,30 @@ const PropertiesTable = () => {
     id: item.id,
     title: item.title,
     streetAddress: item.streetAddress,
-    price: Number(item.price),
-    currency: item.currency,
+    salePrice: Number(item.salePrice),
+    monthlyPrice: Number(item.monthlyPrice),
+    dailyPrice: Number(item.dailyPrice), currency: item.currency,
     status: item.status,
     type: item.type,
-    createdAt: item.createdAt,
+    monthlyPriceEnabled: item.monthlyPriceEnabled,
+    dailyPriceEnabled: item.dailyPriceEnabled, createdAt: item.createdAt,
     location: item.location,
     agents: item.agents,
     amenities: item.amenities,
   });
+
+  const detailsAction: RowAction<Property> = {
+    label: 'Details',
+    icon: <InfoOutlined />,
+    onClick: (id, item) => {
+      router.push(Routes.Properties.ReadOne.replace('{id}', id.toString()));
+    },
+    enabled: (id, item) => {
+      return can(namespace, CRUD_ACTION.READ) || can(namespace, CRUD_ACTION.READ, id);
+    },
+  };
+
+  const actions: RowAction<Property>[] = [detailsAction];
 
   return (
     <ItemsTable<Property, CreateOneInput, UpdateOneInput, Row>
@@ -437,6 +505,7 @@ const PropertiesTable = () => {
       showDelete={() => true}
       getRowHeight={() => 'auto'}
       exportable
+      actions={actions}
     />
   );
 };

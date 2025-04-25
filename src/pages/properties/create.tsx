@@ -7,9 +7,9 @@ import CustomBreadcrumbs from '@common/components/lib/navigation/CustomBreadCrum
 import { CRUD_ACTION } from '@common/defs/types';
 import Namespaces from '@common/defs/namespaces';
 import Labels from '@common/defs/labels';
-import CreateUserStepper from '@modules/users/components/partials/CreateUserStepper';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'react-i18next';
+import UpsertPropertyStepper from '@modules/properties/components/partials/UpsertPropertyStepper';
 
 const PropertiesPage: NextPage = () => {
   const { t } = useTranslation(['property', 'common']);
@@ -24,7 +24,7 @@ const PropertiesPage: NextPage = () => {
           { name: t(`property:${Labels.Properties.NewOne}`) },
         ]}
       />
-      <CreateUserStepper />
+      <UpsertPropertyStepper />
       {/* <CreateUserForm /> */}
     </>
   );

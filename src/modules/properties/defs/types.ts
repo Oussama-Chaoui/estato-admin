@@ -1,4 +1,9 @@
 import { CrudObject, Id } from '@common/defs/types';
+import { Agent } from '@modules/agents/defs/types';
+import { Amenity } from '@modules/amenities/defs/types';
+import { Location } from '@modules/locations/defs/types';
+import { Upload } from '@modules/uploads/defs/types';
+import { Client } from '@modules/users/defs/types';
 
 export enum PROPERTY_STATUS {
   FOR_SALE = 'for_sale',
@@ -19,17 +24,54 @@ export enum PROPERTY_TYPE {
   MANSION = 'mansion',
 }
 
-export interface Location {
-  region: string;
-  city: string;
-  latitude: number;
-  longitude: number;
+export interface Feature extends CrudObject {
+  id: Id;
+  propertyId: Id;
+  bedrooms: number;
+  bathrooms: number;
+  garages: number;
+  pool: boolean;
+  garden: boolean;
+  floors: number;
+  area: number;
+}
+
+export interface Description extends CrudObject {
+  id: Id;
+  propertyId: Id;
+  content: string;
+  ordering: number;
+}
+
+export interface Rental extends CrudObject {
+  propertyId: Id;
+  clientId: Id;
+  agentId: Id;
+  startDate: Date;
+  endDate: Date;
+  price: number;
+  renter?: Client;
+  agent?: Agent;
+  details?: string;
+}
+
+export interface PropertyImage {
+  propertyId: Id;
+  imageId: Id;
+  ordering: number;
+  caption: string | null;
+  upload: Upload
 }
 
 export interface Property extends CrudObject {
   title: string;
   description: string;
-  price: number;
+  salePrice: number;
+  monthlyPrice: number;
+  dailyPrice: number;
+  dailyPriceEnabled: boolean;
+  monthlyPriceEnabled: boolean;
+  currency: string;
   type: PROPERTY_TYPE;
   status: PROPERTY_STATUS;
   locationId: Id;
@@ -37,4 +79,11 @@ export interface Property extends CrudObject {
   yearBuilt: number;
   lotSize: number;
   hasVR: boolean;
+  features: Feature;
+  amenities: Amenity[];
+  agents: Agent[];
+  location: Location;
+  descriptions: Description[];
+  images: PropertyImage[];
+  rental?: Rental[];
 }

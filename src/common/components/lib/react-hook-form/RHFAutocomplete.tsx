@@ -4,6 +4,7 @@ import { Autocomplete, AutocompleteProps, AutocompleteValue, TextField } from '@
 export type SelectOption = {
   value: string;
   label: string;
+  group?: string;
 };
 
 interface Props<

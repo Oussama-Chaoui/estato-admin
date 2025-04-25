@@ -32,7 +32,7 @@ const withAuth = (Component: React.ComponentType<Props>, options: WithAuthOption
         // if login coming from any other page then add url query param to redirect back to the same page after login
         router.push({
           pathname: options.redirectUrl ? options.redirectUrl : Routes.Auth.Login,
-          query: { url: encodeURIComponent(router.pathname) },
+          query: { url: encodeURIComponent(router.asPath) },
         });
         return null;
       }

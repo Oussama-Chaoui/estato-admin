@@ -41,7 +41,6 @@ const PropertiesPage: NextPage = () => {
     if (id) {
       const { data } = await readOne(id);
 
-      console.log(data);
       if (data) {
         if (data.item) {
           setItem(data.item);

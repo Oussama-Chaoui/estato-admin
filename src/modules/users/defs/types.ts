@@ -1,22 +1,22 @@
 import { CrudObject, Id } from '@common/defs/types';
 import { ROLE } from '@modules/permissions/defs/types';
+import { Upload } from '@modules/uploads/defs/types';
 
 export interface User extends CrudObject {
+  name: string;
+  phone: string;
   email: string;
   rolesNames: ROLE[];
   permissionsNames: string[];
 }
 
-export interface Agent extends CrudObject {
-  licenseNumber: string;
-  experience: string;
-  bio: string;
-  photo_id: string;
-  agency_name: string;
-  agency_address: string;
-  photo: string;
+export interface Client extends CrudObject {
+  nicNumber: string;
+  passport: string | null;
+  userId: Id;
   user: User;
-  languages: Language[];
+  imageId?: Id;
+  image: Upload;
 }
 
 export type Language = {

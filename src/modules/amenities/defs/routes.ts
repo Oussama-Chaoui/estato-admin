@@ -1,6 +1,6 @@
 import { CrudAppRoutes } from '@common/defs/types';
 
-const prefix = '/properties';
+const prefix = '/amenities';
 const Routes: CrudAppRoutes = {
   ReadAll: prefix,
   ReadOne: prefix + '/{id}',

@@ -21,6 +21,10 @@ import {
   Garage,
   Check,
   Cancel,
+  AccessTime,
+  AttachMoney,
+  PriceCheck,
+  PhotoCamera,
 } from '@mui/icons-material';
 import {
   Box,
@@ -37,15 +41,25 @@ import {
   CardMedia,
 } from '@mui/material';
 import { Property } from '@modules/properties/defs/types';
-import { Agent } from '@modules/users/defs/types';
 import { getAmenityIcon } from '@modules/properties/defs/utils';
 import PropertyStatus from '@modules/properties/components/partials/PropertyStatus';
+import BookingCalendar from './BookingCalendar';
+import { Agent } from '@modules/agents/defs/types';
+import { useRouter } from 'next/router';
+import Routes from '@modules/properties/defs/routes';
+import { useDialogContext } from '@common/contexts/DialogContext';
+import useProperties from '@modules/properties/hooks/api/useProperties';
+import PropertyDisplay from './PropertyDisplay';
 
 interface PropertyDetailsProps {
   property: Property;
 }
 
 const PropertyDetails = ({ property }: PropertyDetailsProps) => {
+  const router = useRouter();
+  const { openConfirmDialog } = useDialogContext();
+  const { deleteOne } = useProperties();
+
   const technicalDetails = [
     {
       icon: <Apartment />,
@@ -130,13 +144,118 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
             </Box>
           </Box>
 
-          <Box sx={{ textAlign: 'right' }}>
-            <Typography variant="h5" color="text.primary" sx={{ fontWeight: 700 }}>
-              {Number(property.price).toLocaleString()} {property.currency}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Last Updated: {new Date(property.updatedAt).toLocaleDateString()}
-            </Typography>
+          <Box sx={{
+            textAlign: 'right',
+            p: 1.5,
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 2,
+            backgroundColor: 'background.paper',
+            transition: 'all 0.3s ease',
+            maxWidth: 300,
+            '&:hover': {
+              boxShadow: 1,
+              borderColor: 'primary.light'
+            }
+          }}>
+            {/* Main Price Section */}
+            <Grid container spacing={1}>
+              {/* Sale Price */}
+              <Grid item xs={12}>
+                <Box sx={{
+                  p: 1,
+                  borderRadius: 1.5,
+                  backgroundColor: 'primary.lighter'
+                }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.25 }}>
+                    <PriceCheck fontSize="small" color="primary" sx={{ fontSize: '18px' }} />
+                    <Typography variant="overline" sx={{
+                      color: 'text.secondary',
+                      letterSpacing: '0.5px',
+                      lineHeight: 1,
+                      fontSize: '0.7rem'
+                    }}>
+                      Sale Price
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, justifyContent: 'center' }}>
+                    <Typography variant="h5" sx={{
+                      fontWeight: 800,
+                      color: 'primary.dark',
+                      lineHeight: 1
+                    }}>
+                      {property.salePrice.toLocaleString()}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {property.currency}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Grid>
+
+              {/* Other Prices */}
+              <Grid item container xs={12} spacing={1}>
+                {property.monthlyPriceEnabled && (
+                  <Grid item xs={6}>
+                    <Box sx={{
+                      p: 1,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 1.5,
+                    }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                        <CalendarToday fontSize="small" color="primary" sx={{ fontSize: '16px' }} />
+                        <Typography variant="overline" sx={{
+                          color: 'text.secondary',
+                          letterSpacing: '0.5px',
+                          fontSize: '0.7rem'
+                        }}>
+                          Monthly
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, justifyContent: 'center' }}>
+                        <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                          {property.monthlyPrice.toLocaleString()}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          /mo
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Grid>
+                )}
+
+                {property.dailyPriceEnabled && (
+                  <Grid item xs={6}>
+                    <Box sx={{
+                      p: 1,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 1.5,
+                    }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                        <AccessTime fontSize="small" color="primary" sx={{ fontSize: '16px' }} />
+                        <Typography variant="overline" sx={{
+                          color: 'text.secondary',
+                          letterSpacing: '0.5px',
+                          fontSize: '0.7rem'
+                        }}>
+                          Daily
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, justifyContent: 'center' }}>
+                        <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                          {property.dailyPrice.toLocaleString()}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          /day
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Grid>
+                )}
+              </Grid>
+            </Grid>
           </Box>
         </Box>
 
@@ -146,7 +265,7 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
             variant="contained"
             startIcon={<Edit />}
             color="primary"
-            onClick={() => console.log('Edit property')}
+            onClick={() => router.push(Routes.UpdateOne.replace('{id}', property.id.toString()))}
           >
             Edit Property
           </Button>
@@ -154,10 +273,62 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
             variant="outlined"
             startIcon={<Delete />}
             color="error"
-            onClick={() => console.log('Delete property')}
+            onClick={() => {
+              openConfirmDialog(
+                'Supprimer',
+                'Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible.',
+                async () => {
+                  const response = await deleteOne(property.id, {
+                    displayProgress: true,
+                    displaySuccess: true,
+                  });
+                  if (response.success) {
+                    router.push(Routes.ReadAll);
+                  }
+                },
+                'Oui, supprimer',
+                'error'
+              );
+            }}
           >
             Delete Property
           </Button>
+        </Box>
+
+        <Box sx={{ mb: 4 }}>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 700,
+              mb: 3,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              color: 'text.primary',
+            }}
+          >
+            <PhotoCamera color="primary" fontSize="medium" />
+            Property Images
+          </Typography>          <PropertyDisplay images={property.images} />
+        </Box>
+
+        {/* Availabilities & Booking Logs Section */}
+        <Box sx={{ mb: 4 }}>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 700,
+              mb: 3,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              color: 'text.primary',
+            }}
+          >
+            <CalendarToday fontSize="medium" color="primary" />
+            Availabilities & Booking Logs
+          </Typography>
+          <BookingCalendar bookings={property.rentals} />
         </Box>
 
         {/* Property Features */}
@@ -622,7 +793,7 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
                           <Business color="primary" fontSize="small" />
                           <Box>
                             <Typography variant="body2" fontWeight={500}>
-                              {agent.agancyName}
+                              {agent.agencyName}
                             </Typography>
                             <Typography variant="caption" color="text.secondary">
                               {agent.agencyAddress}

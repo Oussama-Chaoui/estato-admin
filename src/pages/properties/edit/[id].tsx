@@ -5,49 +5,18 @@ import Routes from '@common/defs/routes';
 import { useRouter } from 'next/router';
 import PageHeader from '@common/components/lib/partials/PageHeader';
 import CustomBreadcrumbs from '@common/components/lib/navigation/CustomBreadCrumbs';
-import { useEffect, useState } from 'react';
-import useProgressBar from '@common/hooks/useProgressBar';
-import { User } from '@modules/users/defs/types';
-import useUsers from '@modules/users/hooks/api/useUsers';
 import { CRUD_ACTION, Id } from '@common/defs/types';
 import Namespaces from '@common/defs/namespaces';
 import Labels from '@common/defs/labels';
-import UpdateUserForm from '@modules/users/components/partials/UpdateUserForm';
 import { useTranslation } from 'react-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import UpsertPropertyStepper from '@modules/properties/components/partials/UpsertPropertyStepper';
 
 const PropertiesPage: NextPage = () => {
   const router = useRouter();
-  const { start, stop } = useProgressBar();
-  const { readOne } = useUsers();
-  const [loaded, setLoaded] = useState(false);
-  const [item, setItem] = useState<null | User>(null);
-  const id: Id = Number(router.query.id);
+  const rawId = router.asPath.split('/').pop()?.split('?')[0] ?? '';
+  const id: Id = Number(rawId);
   const { t } = useTranslation(['property', 'common']);
-
-  useEffect(() => {
-    if (loaded) {
-      stop();
-    } else {
-      start();
-    }
-  }, [loaded]);
-
-  useEffect(() => {
-    fetchUser();
-  }, [id]);
-
-  const fetchUser = async () => {
-    if (id) {
-      const { data } = await readOne(id);
-      if (data) {
-        if (data.item) {
-          setItem(data.item);
-        }
-      }
-      setLoaded(true);
-    }
-  };
 
   return (
     <>
@@ -56,11 +25,11 @@ const PropertiesPage: NextPage = () => {
         links={[
           { name: t('common:dashboard'), href: Routes.Common.Home },
           { name: t(`property:${Labels.Properties.Items}`), href: Routes.Properties.ReadAll },
-          { name: item ? item.email : t(`property:${Labels.Properties.EditOne}`) },
+          { name: t(`property:${Labels.Properties.EditOne}`) },
         ]}
       />
 
-      {item && <UpdateUserForm item={item} />}
+      {id && <UpsertPropertyStepper itemId={id} />}
     </>
   );
 };
