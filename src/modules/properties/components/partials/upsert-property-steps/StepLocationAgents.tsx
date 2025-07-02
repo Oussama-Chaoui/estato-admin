@@ -42,10 +42,9 @@ const StepLocationAgents = forwardRef<FormStepRef, FormStepProps>(({ data, next 
   const { items: locations } = useLocations({ fetchItems: true, pageSize: 'all' });
   const { items: agents } = useAgents({ fetchItems: true });
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
-  const theme = useTheme()
+  const theme = useTheme();
 
-  console.log("data: ", data)
-
+  console.log('data: ', data);
 
   const methods = useForm<StepLocationAgentsData>({
     resolver: yupResolver(schema),
@@ -113,22 +112,20 @@ const StepLocationAgents = forwardRef<FormStepRef, FormStepProps>(({ data, next 
   if (!locations || !agents) {
     return (
       <Box sx={{ p: 3 }}>
-        <Paper sx={{
-          p: 6,
-          backgroundColor: theme.palette.background.paper,
-          textAlign: 'center',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: 300,
-          gap: 2
-        }}>
-          <CircularProgress
-            size={50}
-            thickness={4}
-            sx={{ color: theme.palette.primary.main }}
-          />
+        <Paper
+          sx={{
+            p: 6,
+            backgroundColor: theme.palette.background.paper,
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: 300,
+            gap: 2,
+          }}
+        >
+          <CircularProgress size={50} thickness={4} sx={{ color: theme.palette.primary.main }} />
           <Typography variant="h6" color="text.secondary">
             Loading Locations & Agents...
           </Typography>
@@ -216,7 +213,9 @@ const StepLocationAgents = forwardRef<FormStepRef, FormStepProps>(({ data, next 
                 options={agentOptions}
                 fullWidth
                 placeholder="Choose agents"
-                getOptionLabel={(option) => (typeof option === 'number' ? getAgentLabel(option) : '')}
+                getOptionLabel={(option) =>
+                  typeof option === 'number' ? getAgentLabel(option) : ''
+                }
                 groupBy={(option) => {
                   const ag = agents.find((a) => a.id === option);
                   return ag?.agencyName ?? '';

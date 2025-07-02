@@ -1,10 +1,4 @@
-import React, {
-  forwardRef,
-  useImperativeHandle,
-  useEffect,
-  useState,
-  useCallback,
-} from 'react';
+import React, { forwardRef, useImperativeHandle, useEffect, useState, useCallback } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import {
   Box,
@@ -28,26 +22,12 @@ import {
   Check,
   ErrorOutline,
 } from '@mui/icons-material';
-import {
-  FormStepProps,
-  FormStepRef,
-} from '@common/components/lib/navigation/FormStepper';
+import { FormStepProps, FormStepRef } from '@common/components/lib/navigation/FormStepper';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useDropzone } from 'react-dropzone';
-import {
-  DndContext,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragOverlay,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  useSortable,
-  arrayMove,
-  rectSortingStrategy,
-} from '@dnd-kit/sortable';
+import { DndContext, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
+import { SortableContext, useSortable, arrayMove, rectSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { RHFTextField } from '@common/components/lib/react-hook-form';
 import useUploads from '@modules/uploads/hooks/api/useUploads';
@@ -75,7 +55,7 @@ const ThumbnailContainer = styled(Paper)(({ theme }) => ({
   '&:hover': {
     transform: 'translateY(-2px)',
     boxShadow: theme.shadows[4],
-    '& .actions': { opacity: 1 }
+    '& .actions': { opacity: 1 },
   },
 }));
 
@@ -90,14 +70,14 @@ const GridContainer = styled(Grid)(({ theme }) => ({
   [theme.breakpoints.down('sm')]: {
     marginLeft: '-4px',
     marginRight: '-4px',
-  }
+  },
 }));
 
 const GridItem = styled(Grid)(({ theme }) => ({
   padding: theme.spacing(1.5),
   [theme.breakpoints.down('sm')]: {
     padding: theme.spacing(1),
-  }
+  },
 }));
 
 const CaptionField = styled(RHFTextField)(({ theme }) => ({
@@ -107,7 +87,7 @@ const CaptionField = styled(RHFTextField)(({ theme }) => ({
   },
   '& .MuiInputLabel-root': {
     color: theme.palette.text.secondary,
-  }
+  },
 }));
 
 const ActionsOverlay = styled(Box)({
@@ -161,13 +141,13 @@ const schema = yup.object({
     yup.object({
       caption: yup.string().max(100, 'Caption must be less than 100 characters'),
       ordering: yup.number().required(),
-    }),
+    })
   ),
 });
 
 /* ────────────────────── sortable thumbnail component ────────────────────── */
 
-function SortableThumb({
+const SortableThumb = ({
   item,
   index,
   handleDelete,
@@ -177,15 +157,10 @@ function SortableThumb({
   index: number;
   handleDelete: (idx: number) => void;
   setFiles: React.Dispatch<React.SetStateAction<ImageItem[]>>;
-}) {
-  const {
-    setNodeRef,
-    attributes,
-    listeners,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item.uiId });
+}) => {
+  const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
+    id: item.uiId,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -201,16 +176,18 @@ function SortableThumb({
       {...attributes}
       sx={{
         '&:hover': {
-          zIndex: 2
-        }
+          zIndex: 2,
+        },
       }}
     >
-      <ThumbnailContainer elevation={isDragging ? 6 : 3}
+      <ThumbnailContainer
+        elevation={isDragging ? 6 : 3}
         sx={{
           opacity: isDragging ? 0.25 : 1,
           filter: isDragging ? 'blur(2px)' : 'none',
           pointerEvents: isDragging ? 'none' : 'auto',
-        }}>
+        }}
+      >
         <Box
           {...listeners}
           sx={{
@@ -234,11 +211,7 @@ function SortableThumb({
           )}
         </StatusIndicator>
 
-        <Avatar
-          variant="rounded"
-          src={item.preview}
-          sx={{ width: '100%', height: 200 }}
-        />
+        <Avatar variant="rounded" src={item.preview} sx={{ width: '100%', height: 200 }} />
 
         <ActionsOverlay className="actions">
           <IconButton
@@ -259,250 +232,245 @@ function SortableThumb({
           mt: 1,
           '& .MuiInputBase-input': {
             px: 1.5,
-            fontSize: '0.875rem'
-          }
+            fontSize: '0.875rem',
+          },
         }}
         value={item.caption}
         disabled={item.status === 'uploading'}
         onChange={(e) =>
           setFiles((prev) =>
-            prev.map((f, i) =>
-              i === index ? { ...f, caption: e.target.value } : f,
-            ),
+            prev.map((f, i) => (i === index ? { ...f, caption: e.target.value } : f))
           )
         }
       />
     </Grid>
   );
-}
+};
 
 /* ───────────────────────────── component ─────────────────────────────────── */
 
-const StepImages = forwardRef<FormStepRef, FormStepProps>(
-  ({ data, next }, ref) => {
-    const theme = useTheme();
-    const { createOne: uploadImage, deleteOne } = useUploads();
-    const [files, setFiles] = useState<ImageItem[]>([]);
-    const [activeId, setActiveId] = useState<string | null>(null);
+const StepImages = forwardRef<FormStepRef, FormStepProps>(({ data, next }, ref) => {
+  const theme = useTheme();
+  const { createOne: uploadImage, deleteOne } = useUploads();
+  const [files, setFiles] = useState<ImageItem[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
-    const methods = useForm<StepImagesData>({
-      resolver: yupResolver(schema),
-      defaultValues: { images: data?.images ?? [] },
-    });
+  const methods = useForm<StepImagesData>({
+    resolver: yupResolver(schema),
+    defaultValues: { images: data?.images ?? [] },
+  });
 
-    /* --------------------------- initialise list -------------------------- */
-    useEffect(() => {
-      if (data?.images && files.length === 0) {
-        const sorted = [...data.images].sort((a, b) => a.ordering - b.ordering)
-        setFiles(
-          sorted.map((img) => ({
-            uiId: `u-${img.imageId}`,
-            uploadId: img.imageId,
-            preview: img.preview,
-            caption: img.caption,
-            ordering: img.ordering,
-            status: 'uploaded' as const,
-          }))
-        );
-      }
-    }, [data?.images, files.length]);
+  /* --------------------------- initialise list -------------------------- */
+  useEffect(() => {
+    if (data?.images && files.length === 0) {
+      const sorted = [...data.images].sort((a, b) => a.ordering - b.ordering);
+      setFiles(
+        sorted.map((img) => ({
+          uiId: `u-${img.imageId}`,
+          uploadId: img.imageId,
+          preview: img.preview,
+          caption: img.caption,
+          ordering: img.ordering,
+          status: 'uploaded' as const,
+        }))
+      );
+    }
+  }, [data?.images, files.length]);
 
-    useEffect(() => {
-      methods.setValue('images', files);
-    }, [files, methods]);
+  useEffect(() => {
+    methods.setValue('images', files);
+  }, [files, methods]);
 
-    useEffect(
-      () => () =>
-        files.forEach((f) => f.preview?.startsWith('blob:') && URL.revokeObjectURL(f.preview)),
-      [files],
-    );
+  useEffect(
+    () => () =>
+      files.forEach((f) => f.preview?.startsWith('blob:') && URL.revokeObjectURL(f.preview)),
+    [files]
+  );
 
-    /* ----------------------------- upload flow ---------------------------- */
+  /* ----------------------------- upload flow ---------------------------- */
 
-    const handleUpload = useCallback(
-      async (file: File, index: number) => {
+  const handleUpload = useCallback(
+    async (file: File, index: number) => {
+      setFiles((prev) => prev.map((f, i) => (i === index ? { ...f, status: 'uploading' } : f)));
+      try {
+        const res = await uploadImage({ file });
+        if (!res.success) {
+          throw new Error();
+        }
         setFiles((prev) =>
-          prev.map((f, i) => (i === index ? { ...f, status: 'uploading' } : f)),
-        );
-        try {
-          const res = await uploadImage({ file });
-          if (!res.success) throw new Error();
-          setFiles((prev) =>
-            prev.map((f, i) =>
-              i === index
-                ? {
+          prev.map((f, i) =>
+            i === index
+              ? {
                   ...f,
                   status: 'uploaded',
                   uploadId: res.data!.item.id,
                   preview: res.data!.item.url,
                   file: undefined,
                 }
-                : f,
-            ),
-          );
-        } catch {
-          setFiles((prev) =>
-            prev.map((f, i) => (i === index ? { ...f, status: 'error' } : f)),
-          );
-        }
-      },
-      [uploadImage],
-    );
-
-    /* --------------------------- react-dropzone --------------------------- */
-
-    const { getRootProps, getInputProps } = useDropzone({
-      accept: { 'image/*': [] },
-      onDrop: (accepted) => {
-        const newItems: ImageItem[] = accepted.map((file, idx) => {
-          const blobUrl = URL.createObjectURL(file);
-          const ordering = files.length + idx;
-          handleUpload(file, ordering);
-          return {
-            uiId: blobUrl,
-            file,
-            preview: blobUrl,
-            caption: '',
-            ordering,
-            status: 'uploading',
-          };
-        });
-        setFiles((prev) => [...prev, ...newItems]);
-      },
-    });
-
-    /* ------------------------------- delete -------------------------------- */
-
-    const handleDelete = useCallback(
-      async (idx: number) => {
-        const toDelete = files[idx];
-        if (toDelete.uploadId) await deleteOne(toDelete.uploadId);
-        if (toDelete.preview?.startsWith('blob:')) URL.revokeObjectURL(toDelete.preview);
-        setFiles((prev) =>
-          prev
-            .filter((_, i) => i !== idx)
-            .map((f, i) => ({ ...f, ordering: i })),
+              : f
+          )
         );
-      },
-      [files, deleteOne],
-    );
+      } catch {
+        setFiles((prev) => prev.map((f, i) => (i === index ? { ...f, status: 'error' } : f)));
+      }
+    },
+    [uploadImage]
+  );
 
-    /* ------------------------------- submit ------------------------------- */
+  /* --------------------------- react-dropzone --------------------------- */
 
-    useImperativeHandle(ref, () => ({
-      submit: async () => {
-        await methods.handleSubmit(() => {
-          next({
-            images: files
-              .filter((f) => f.uploadId)
-              .map((f) => ({
-                imageId: f.uploadId!,
-                caption: f.caption,
-                ordering: f.ordering,
-                preview: f.preview,
-              })),
-          });
-        })();
-      },
-    }));
+  const { getRootProps, getInputProps } = useDropzone({
+    accept: { 'image/*': [] },
+    onDrop: (accepted) => {
+      const newItems: ImageItem[] = accepted.map((file, idx) => {
+        const blobUrl = URL.createObjectURL(file);
+        const ordering = files.length + idx;
+        handleUpload(file, ordering);
+        return {
+          uiId: blobUrl,
+          file,
+          preview: blobUrl,
+          caption: '',
+          ordering,
+          status: 'uploading',
+        };
+      });
+      setFiles((prev) => [...prev, ...newItems]);
+    },
+  });
 
-    /* ------------------------------- dnd-kit ------------------------------ */
+  /* ------------------------------- delete -------------------------------- */
 
-    const sensors = useSensors(useSensor(PointerSensor));
+  const handleDelete = useCallback(
+    async (idx: number) => {
+      const toDelete = files[idx];
+      if (toDelete.uploadId) {
+        await deleteOne(toDelete.uploadId);
+      }
+      if (toDelete.preview?.startsWith('blob:')) {
+        URL.revokeObjectURL(toDelete.preview);
+      }
+      setFiles((prev) => prev.filter((_, i) => i !== idx).map((f, i) => ({ ...f, ordering: i })));
+    },
+    [files, deleteOne]
+  );
 
-    return (
-      <FormProvider {...methods}>
-        <Box sx={{ p: 3 }}>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Paper sx={{
+  /* ------------------------------- submit ------------------------------- */
+
+  useImperativeHandle(ref, () => ({
+    submit: async () => {
+      await methods.handleSubmit(() => {
+        next({
+          images: files
+            .filter((f) => f.uploadId)
+            .map((f) => ({
+              imageId: f.uploadId!,
+              caption: f.caption,
+              ordering: f.ordering,
+              preview: f.preview,
+            })),
+        });
+      })();
+    },
+  }));
+
+  /* ------------------------------- dnd-kit ------------------------------ */
+
+  const sensors = useSensors(useSensor(PointerSensor));
+
+  return (
+    <FormProvider {...methods}>
+      <Box sx={{ p: 3 }}>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Paper
+              sx={{
                 p: 3,
-                backgroundColor: theme.palette.background.paper
-              }}>
-                <Typography
-                  variant="h6"
-                  sx={{ mb: 2, color: theme.palette.primary.dark }}
-                >
-                  Property Images
+                backgroundColor: theme.palette.background.paper,
+              }}
+            >
+              <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.dark }}>
+                Property Images
+              </Typography>
+
+              <Alert
+                severity="warning"
+                icon={<WarningAmber />}
+                sx={{
+                  mb: 4,
+                  bgcolor: theme.palette.warning.lighter,
+                  color: theme.palette.warning.dark,
+                }}
+              >
+                <AlertTitle>Important Note</AlertTitle>
+                Images upload instantly. Removing one will delete it permanently.
+              </Alert>
+
+              <Dropzone {...getRootProps()} elevation={0} sx={{ mb: 4 }}>
+                <input {...getInputProps()} />
+                <CloudUpload sx={{ fontSize: 40, mb: 2, color: 'text.secondary' }} />
+                <Typography>Drag & drop images here, or click to select</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  Recommended size: 1200×800px • Max file size: 5 MB
                 </Typography>
+              </Dropzone>
 
-                <Alert
-                  severity="warning"
-                  icon={<WarningAmber />}
-                  sx={{
-                    mb: 4,
-                    bgcolor: theme.palette.warning.lighter,
-                    color: theme.palette.warning.dark,
-                  }}
-                >
-                  <AlertTitle>Important Note</AlertTitle>
-                  Images upload instantly. Removing one will delete it permanently.
-                </Alert>
+              <DndContext
+                sensors={sensors}
+                onDragStart={(e) => setActiveId(e.active.id as string)}
+                onDragEnd={({ active, over }) => {
+                  setActiveId(null);
+                  if (!over || active.id === over.id) {
+                    return;
+                  }
+                  const oldIdx = files.findIndex((f) => f.uiId === active.id);
+                  const newIdx = files.findIndex((f) => f.uiId === over.id);
+                  setFiles((prev) => {
+                    const moved = arrayMove(prev, oldIdx, newIdx);
+                    return moved.map((file, idx) => ({
+                      ...file,
+                      ordering: idx,
+                    }));
+                  });
+                }}
+              >
+                <SortableContext items={files.map((f) => f.uiId)} strategy={rectSortingStrategy}>
+                  <GridContainer container>
+                    {files.map((file, idx) => (
+                      <GridItem item xs={12} sm={6} md={4} lg={3} key={file.uiId}>
+                        <SortableThumb
+                          item={file}
+                          index={idx}
+                          handleDelete={handleDelete}
+                          setFiles={setFiles}
+                        />
+                      </GridItem>
+                    ))}
+                  </GridContainer>
+                </SortableContext>
 
-                <Dropzone {...getRootProps()} elevation={0} sx={{ mb: 4 }}>
-                  <input {...getInputProps()} />
-                  <CloudUpload sx={{ fontSize: 40, mb: 2, color: 'text.secondary' }} />
-                  <Typography>Drag & drop images here, or click to select</Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    Recommended size: 1200×800px • Max file size: 5 MB
-                  </Typography>
-                </Dropzone>
-
-                <DndContext
-                  sensors={sensors}
-                  onDragStart={(e) => setActiveId(e.active.id as string)}
-                  onDragEnd={({ active, over }) => {
-                    setActiveId(null);
-                    if (!over || active.id === over.id) return;
-                    const oldIdx = files.findIndex(f => f.uiId === active.id);
-                    const newIdx = files.findIndex(f => f.uiId === over.id);
-                    setFiles(prev => {
-                      const moved = arrayMove(prev, oldIdx, newIdx);
-                      return moved.map((file, idx) => ({
-                        ...file,
-                        ordering: idx,
-                      }));
-                    });
-                  }}
-                >
-                  <SortableContext items={files.map((f) => f.uiId)} strategy={rectSortingStrategy}>
-                    <GridContainer container>
-                      {files.map((file, idx) => (
-                        <GridItem item xs={12} sm={6} md={4} lg={3} key={file.uiId}>
-                          <SortableThumb
-                            item={file}
-                            index={idx}
-                            handleDelete={handleDelete}
-                            setFiles={setFiles}
-                          />
-                        </GridItem>
-                      ))}
-                    </GridContainer>
-                  </SortableContext>
-
-                  <DragOverlay dropAnimation={null}>
-                    {activeId && (
-                      <DragOverlayContent
-                        elevation={6}
-                        sx={{
-                          width: 300,
-                          height: 200,
-                          backgroundColor: 'transparent',
-                          backgroundImage: `url(${files.find(f => f.uiId === activeId)?.preview})`,
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                        }}
-                      />
-                    )}
-                  </DragOverlay>
-                </DndContext>
-              </Paper>
-            </Grid>
+                <DragOverlay dropAnimation={null}>
+                  {activeId && (
+                    <DragOverlayContent
+                      elevation={6}
+                      sx={{
+                        width: 300,
+                        height: 200,
+                        backgroundColor: 'transparent',
+                        backgroundImage: `url(${files.find((f) => f.uiId === activeId)?.preview})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                      }}
+                    />
+                  )}
+                </DragOverlay>
+              </DndContext>
+            </Paper>
           </Grid>
-        </Box>
-      </FormProvider>
-    );
-  },
-);
+        </Grid>
+      </Box>
+    </FormProvider>
+  );
+});
 
 export default StepImages;

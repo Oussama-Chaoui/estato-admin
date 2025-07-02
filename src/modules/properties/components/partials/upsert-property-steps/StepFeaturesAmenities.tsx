@@ -1,6 +1,15 @@
 // StepFeaturesAmenities.tsx
 import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react';
-import { Box, Chip, CircularProgress, Grid, InputAdornment, Paper, Typography, useTheme } from '@mui/material';
+import {
+  Box,
+  Chip,
+  CircularProgress,
+  Grid,
+  InputAdornment,
+  Paper,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import { useForm, FormProvider } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -119,38 +128,38 @@ const buildSchema = (ptype: PROPERTY_TYPE) => {
   return yup.object({
     bedrooms: flags.bedrooms
       ? yup
-        .number()
-        .typeError('Bedrooms must be a number')
-        .required('Bedrooms is required')
-        .min(0, 'Bedrooms cannot be negative')
+          .number()
+          .typeError('Bedrooms must be a number')
+          .required('Bedrooms is required')
+          .min(0, 'Bedrooms cannot be negative')
       : yup.number().nullable(),
     bathrooms: flags.bathrooms
       ? yup
-        .number()
-        .typeError('Bathrooms must be a number')
-        .required('Bathrooms is required')
-        .min(0, 'Bathrooms cannot be negative')
+          .number()
+          .typeError('Bathrooms must be a number')
+          .required('Bathrooms is required')
+          .min(0, 'Bathrooms cannot be negative')
       : yup.number().nullable(),
     area: flags.area
       ? yup
-        .number()
-        .typeError('Area must be a number')
-        .required('Area is required')
-        .min(0, 'Area must be at least 0')
+          .number()
+          .typeError('Area must be a number')
+          .required('Area is required')
+          .min(0, 'Area must be at least 0')
       : yup.number().nullable(),
     garages: flags.garages
       ? yup
-        .number()
-        .typeError('Garages must be a number')
-        .required('Garages is required')
-        .min(0, 'Garages cannot be negative')
+          .number()
+          .typeError('Garages must be a number')
+          .required('Garages is required')
+          .min(0, 'Garages cannot be negative')
       : yup.number().nullable(),
     floors: flags.floors
       ? yup
-        .number()
-        .typeError('Floors must be a number')
-        .required('Floors is required')
-        .min(1, 'Floors must be at least 1')
+          .number()
+          .typeError('Floors must be a number')
+          .required('Floors is required')
+          .min(1, 'Floors must be at least 1')
       : yup.number().nullable(),
     pool: yup.boolean(),
     garden: yup.boolean(),
@@ -187,7 +196,7 @@ const StepFeaturesAmenities = forwardRef<FormStepRef, FormStepProps>(({ data, ne
 
   const schema = useMemo(() => buildSchema(propertyType), [propertyType]);
 
-  console.log(data)
+  console.log(data);
 
   const methods = useForm<StepFeaturesAmenitiesData>({
     resolver: yupResolver(schema),
@@ -216,22 +225,20 @@ const StepFeaturesAmenities = forwardRef<FormStepRef, FormStepProps>(({ data, ne
   if (loadingAmenities) {
     return (
       <Box sx={{ p: 3 }}>
-        <Paper sx={{
-          p: 6,
-          backgroundColor: theme.palette.background.paper,
-          textAlign: 'center',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: 300,
-          gap: 2
-        }}>
-          <CircularProgress
-            size={50}
-            thickness={4}
-            sx={{ color: theme.palette.primary.main }}
-          />
+        <Paper
+          sx={{
+            p: 6,
+            backgroundColor: theme.palette.background.paper,
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: 300,
+            gap: 2,
+          }}
+        >
+          <CircularProgress size={50} thickness={4} sx={{ color: theme.palette.primary.main }} />
           <Typography variant="h6" color="text.secondary">
             Loading Amenities...
           </Typography>
@@ -249,8 +256,6 @@ const StepFeaturesAmenities = forwardRef<FormStepRef, FormStepProps>(({ data, ne
         <Paper sx={{ p: 3, backgroundColor: theme.palette.background.paper }}>
           <Grid container spacing={4}>
             <Grid item xs={12}>
-
-
               <Typography
                 variant="h6"
                 gutterBottom
@@ -415,12 +420,9 @@ const StepFeaturesAmenities = forwardRef<FormStepRef, FormStepProps>(({ data, ne
                   )}
                 </Grid>
               </Grid>
-
-
             </Grid>
 
             <Grid item xs={12}>
-
               <Typography
                 variant="h6"
                 gutterBottom
@@ -476,7 +478,7 @@ const StepFeaturesAmenities = forwardRef<FormStepRef, FormStepProps>(({ data, ne
           </Grid>
         </Paper>
       </Box>
-    </FormProvider >
+    </FormProvider>
   );
 });
 

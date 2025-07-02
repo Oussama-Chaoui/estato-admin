@@ -1,4 +1,4 @@
-import { Any, AnyObject } from '@common/defs/types';
+import { AnyObject } from '@common/defs/types';
 import { useEffect, useMemo, useState } from 'react';
 
 interface Step<STEP_ID> {

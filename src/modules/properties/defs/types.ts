@@ -60,7 +60,7 @@ export interface PropertyImage {
   imageId: Id;
   ordering: number;
   caption: string | null;
-  upload: Upload
+  upload: Upload;
 }
 
 export interface Property extends CrudObject {

@@ -240,7 +240,7 @@ const Leftbar = (props: LeftbarProps) => {
                           </StyledListItemIcon>
                           <ListItemText
                             primary={item.text}
-                            sx={{ color: isActive ? '#fff' : 'grey.500' }}
+                            sx={{ color: isActive ? '#fff' : 'grey.900' }}
                           />
                           {item.suffix && (
                             <Tooltip title={item.suffix.tooltip}>

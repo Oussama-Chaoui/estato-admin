@@ -22,7 +22,6 @@ import {
   Check,
   Cancel,
   AccessTime,
-  AttachMoney,
   PriceCheck,
   PhotoCamera,
 } from '@mui/icons-material';
@@ -144,46 +143,63 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
             </Box>
           </Box>
 
-          <Box sx={{
-            textAlign: 'right',
-            p: 1.5,
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 2,
-            backgroundColor: 'background.paper',
-            transition: 'all 0.3s ease',
-            maxWidth: 300,
-            '&:hover': {
-              boxShadow: 1,
-              borderColor: 'primary.light'
-            }
-          }}>
+          <Box
+            sx={{
+              textAlign: 'right',
+              p: 1.5,
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: 2,
+              backgroundColor: 'background.paper',
+              transition: 'all 0.3s ease',
+              maxWidth: 300,
+              '&:hover': {
+                boxShadow: 1,
+                borderColor: 'primary.light',
+              },
+            }}
+          >
             {/* Main Price Section */}
             <Grid container spacing={1}>
               {/* Sale Price */}
               <Grid item xs={12}>
-                <Box sx={{
-                  p: 1,
-                  borderRadius: 1.5,
-                  backgroundColor: 'primary.lighter'
-                }}>
+                <Box
+                  sx={{
+                    p: 1,
+                    borderRadius: 1.5,
+                    backgroundColor: 'primary.lighter',
+                  }}
+                >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.25 }}>
                     <PriceCheck fontSize="small" color="primary" sx={{ fontSize: '18px' }} />
-                    <Typography variant="overline" sx={{
-                      color: 'text.secondary',
-                      letterSpacing: '0.5px',
-                      lineHeight: 1,
-                      fontSize: '0.7rem'
-                    }}>
+                    <Typography
+                      variant="overline"
+                      sx={{
+                        color: 'text.secondary',
+                        letterSpacing: '0.5px',
+                        lineHeight: 1,
+                        fontSize: '0.7rem',
+                      }}
+                    >
                       Sale Price
                     </Typography>
                   </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, justifyContent: 'center' }}>
-                    <Typography variant="h5" sx={{
-                      fontWeight: 800,
-                      color: 'primary.dark',
-                      lineHeight: 1
-                    }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'baseline',
+                      gap: 0.5,
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontWeight: 800,
+                        color: 'primary.dark',
+                        lineHeight: 1,
+                      }}
+                    >
                       {property.salePrice.toLocaleString()}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
@@ -197,23 +213,35 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
               <Grid item container xs={12} spacing={1}>
                 {property.monthlyPriceEnabled && (
                   <Grid item xs={6}>
-                    <Box sx={{
-                      p: 1,
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderRadius: 1.5,
-                    }}>
+                    <Box
+                      sx={{
+                        p: 1,
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        borderRadius: 1.5,
+                      }}
+                    >
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
                         <CalendarToday fontSize="small" color="primary" sx={{ fontSize: '16px' }} />
-                        <Typography variant="overline" sx={{
-                          color: 'text.secondary',
-                          letterSpacing: '0.5px',
-                          fontSize: '0.7rem'
-                        }}>
+                        <Typography
+                          variant="overline"
+                          sx={{
+                            color: 'text.secondary',
+                            letterSpacing: '0.5px',
+                            fontSize: '0.7rem',
+                          }}
+                        >
                           Monthly
                         </Typography>
                       </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, justifyContent: 'center' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'baseline',
+                          gap: 0.5,
+                          justifyContent: 'center',
+                        }}
+                      >
                         <Typography variant="body1" sx={{ fontWeight: 700 }}>
                           {property.monthlyPrice.toLocaleString()}
                         </Typography>
@@ -227,23 +255,35 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
 
                 {property.dailyPriceEnabled && (
                   <Grid item xs={6}>
-                    <Box sx={{
-                      p: 1,
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderRadius: 1.5,
-                    }}>
+                    <Box
+                      sx={{
+                        p: 1,
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        borderRadius: 1.5,
+                      }}
+                    >
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
                         <AccessTime fontSize="small" color="primary" sx={{ fontSize: '16px' }} />
-                        <Typography variant="overline" sx={{
-                          color: 'text.secondary',
-                          letterSpacing: '0.5px',
-                          fontSize: '0.7rem'
-                        }}>
+                        <Typography
+                          variant="overline"
+                          sx={{
+                            color: 'text.secondary',
+                            letterSpacing: '0.5px',
+                            fontSize: '0.7rem',
+                          }}
+                        >
                           Daily
                         </Typography>
                       </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, justifyContent: 'center' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'baseline',
+                          gap: 0.5,
+                          justifyContent: 'center',
+                        }}
+                      >
                         <Typography variant="body1" sx={{ fontWeight: 700 }}>
                           {property.dailyPrice.toLocaleString()}
                         </Typography>
@@ -309,7 +349,8 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
           >
             <PhotoCamera color="primary" fontSize="medium" />
             Property Images
-          </Typography>          <PropertyDisplay images={property.images} />
+          </Typography>
+          <PropertyDisplay images={property.images} />
         </Box>
 
         {/* Availabilities & Booking Logs Section */}

@@ -12,20 +12,19 @@ import useProperties, {
   CreateOneInput,
   UpdateOneInput,
 } from '@modules/properties/hooks/api/useProperties';
-import { Feature, Property } from '@modules/properties/defs/types';
+import { Property } from '@modules/properties/defs/types';
 import StepGeneralDetails from '@modules/properties/components/partials/upsert-property-steps/StepGeneralDetails';
 import { Id } from '@common/defs/types';
 import StepLocationAgents from './upsert-property-steps/StepLocationAgents';
 import StepFeaturesAmenities from './upsert-property-steps/StepFeaturesAmenities';
 import StepImages from './upsert-property-steps/StepImages';
 import { Box, CircularProgress, Paper, Typography, useTheme } from '@mui/material';
-import { Location } from '@modules/locations/defs/types';
 
 export enum CREATE_PROPERTY_STEP_ID {
   GENERAL = 'general',
   LOCATION_AGENTS = 'location-agents',
   FEATURES_AMENITIES = 'features-amenities',
-  IMAGES = 'images'
+  IMAGES = 'images',
 }
 
 interface UpsertPropertyStepperProps {
@@ -50,11 +49,11 @@ const mapPropertyToInput = (property: Property): CreateOneInput => ({
   locationId: property.location.id,
   agentIds: property.agents.map((a) => a.id),
   amenityIds: property.amenities.map((a) => a.id),
-  images: property.images.map(img => ({
+  images: property.images.map((img) => ({
     imageId: img.imageId,
     caption: img.caption ?? '',
     ordering: img.ordering,
-    preview: img.upload.url
+    preview: img.upload.url,
   })),
   features: {
     id: property.features[0]?.id ?? 0,
@@ -78,7 +77,7 @@ const mapPropertyToInput = (property: Property): CreateOneInput => ({
 const UpsertPropertyStepper = ({ itemId }: UpsertPropertyStepperProps) => {
   const { t } = useTranslation(['property']);
   const router = useRouter();
-  const theme = useTheme()
+  const theme = useTheme();
 
   const { createOne, updateOne, readOne } = useProperties();
 
@@ -144,22 +143,20 @@ const UpsertPropertyStepper = ({ itemId }: UpsertPropertyStepperProps) => {
   if (itemId && loading) {
     return (
       <Box sx={{ p: 3 }}>
-        <Paper sx={{
-          p: 6,
-          backgroundColor: theme.palette.background.paper,
-          textAlign: 'center',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: 400,
-          gap: 3
-        }}>
-          <CircularProgress
-            size={60}
-            thickness={4}
-            sx={{ color: theme.palette.primary.main }}
-          />
+        <Paper
+          sx={{
+            p: 6,
+            backgroundColor: theme.palette.background.paper,
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: 400,
+            gap: 3,
+          }}
+        >
+          <CircularProgress size={60} thickness={4} sx={{ color: theme.palette.primary.main }} />
           <Typography variant="h5" color="text.primary" sx={{ fontWeight: 500 }}>
             {t('property:loading.property_details')}
           </Typography>

@@ -81,6 +81,8 @@ const Layout = (props: ILayoutProps) => {
       <Head>
         <title>{process.env.NEXT_PUBLIC_APP_TITLE}</title>
         <meta name="viewport" content="initial-scale=1, width=device-width" />
+        {/* CKEditor 5 Classic build theme from CDN */}
+        <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/44.3.0/ckeditor5.css" />
       </Head>
       <Box
         sx={{

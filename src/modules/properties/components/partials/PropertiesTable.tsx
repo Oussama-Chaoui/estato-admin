@@ -37,7 +37,8 @@ interface Row extends CrudRow {
   streetAddress: string;
   salePrice: number;
   monthlyPrice: number;
-  dailyPrice: number; currency: string;
+  dailyPrice: number;
+  currency: string;
   status: PROPERTY_STATUS;
   monthlyPriceEnabled: boolean;
   dailyPriceEnabled: boolean;
@@ -454,8 +455,8 @@ const PropertiesTable = () => {
       field: 'createdAt',
       headerName: 'Created at',
       width: 120,
-      hide: true,         // keep it out of view
-      sortable: false,    // we’re sorting on the server anyway
+      hide: true, // keep it out of view
+      sortable: false, // we’re sorting on the server anyway
     },
   ];
 
@@ -471,11 +472,13 @@ const PropertiesTable = () => {
     streetAddress: item.streetAddress,
     salePrice: Number(item.salePrice),
     monthlyPrice: Number(item.monthlyPrice),
-    dailyPrice: Number(item.dailyPrice), currency: item.currency,
+    dailyPrice: Number(item.dailyPrice),
+    currency: item.currency,
     status: item.status,
     type: item.type,
     monthlyPriceEnabled: item.monthlyPriceEnabled,
-    dailyPriceEnabled: item.dailyPriceEnabled, createdAt: item.createdAt,
+    dailyPriceEnabled: item.dailyPriceEnabled,
+    createdAt: item.createdAt,
     location: item.location,
     agents: item.agents,
     amenities: item.amenities,

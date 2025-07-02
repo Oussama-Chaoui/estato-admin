@@ -88,9 +88,7 @@ const StepGeneralDetails = forwardRef<FormStepRef, FormStepProps>((props, ref) =
       // if initial type is LAND, default status to FOR_SALE
       status:
         data?.status ??
-        (data?.type === PROPERTY_TYPE.LAND
-          ? PROPERTY_STATUS.FOR_SALE
-          : ('' as PROPERTY_STATUS)),
+        (data?.type === PROPERTY_TYPE.LAND ? PROPERTY_STATUS.FOR_SALE : ('' as PROPERTY_STATUS)),
       dailyPriceEnabled: data?.dailyPriceEnabled || false,
       monthlyPriceEnabled: data?.monthlyPriceEnabled || false,
     },
@@ -126,9 +124,7 @@ const StepGeneralDetails = forwardRef<FormStepRef, FormStepProps>((props, ref) =
         type: data?.type || ('' as PROPERTY_TYPE),
         status:
           data?.status ??
-          (data?.type === PROPERTY_TYPE.LAND
-            ? PROPERTY_STATUS.FOR_SALE
-            : ('' as PROPERTY_STATUS)),
+          (data?.type === PROPERTY_TYPE.LAND ? PROPERTY_STATUS.FOR_SALE : ('' as PROPERTY_STATUS)),
         dailyPriceEnabled: data?.dailyPriceEnabled || false,
         monthlyPriceEnabled: data?.monthlyPriceEnabled || false,
       },

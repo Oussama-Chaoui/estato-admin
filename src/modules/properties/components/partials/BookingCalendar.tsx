@@ -31,6 +31,32 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const currentDayjs = dayjs(currentDate);
 
+  const getBackgroundColor = (date: dayjs.Dayjs) => {
+    const isToday = date.isSame(dayjs(), 'day');
+    const isWeekend = date.day() === 0 || date.day() === 6;
+
+    if (isToday) {
+      return alpha(theme.palette.primary.lighter, 0.4);
+    }
+    if (isWeekend) {
+      return alpha(theme.palette.primary.lighter, 0.2);
+    }
+    return 'transparent';
+  };
+
+  const getDayColor = (date: dayjs.Dayjs, bookingsOnDate: Rental[]) => {
+    if (date.isSame(dayjs(), 'day')) {
+      return theme.palette.success.darker;
+    }
+    if (date.day() === 0 || date.day() === 6) {
+      return theme.palette.secondary.dark;
+    }
+    if (bookingsOnDate.length > 0) {
+      return theme.palette.success.dark;
+    }
+    return theme.palette.text.primary;
+  };
+
   const getBookingCoverage = (booking: Rental, date: dayjs.Dayjs) => {
     const dayStart = date.startOf('day');
     const dayEnd = date.endOf('day');
@@ -52,8 +78,6 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings }) => {
 
   const getCellStyle = (date: dayjs.Dayjs) => {
     const bookingsOnDate = getBookingsForDate(date);
-    const isToday = date.isSame(dayjs(), 'day');
-    const isWeekend = date.day() === 0 || date.day() === 6;
     const isCurrentMonth = date.month() === currentDayjs.month();
 
     const gradients = bookingsOnDate.map((booking) => {
@@ -68,11 +92,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings }) => {
     });
 
     return {
-      backgroundColor: isToday
-        ? alpha(theme.palette.primary.lighter, 0.4)
-        : isWeekend
-          ? alpha(theme.palette.primary.lighter, 0.2)
-          : 'transparent',
+      backgroundColor: getBackgroundColor(date),
       border: `1px solid ${theme.palette.divider}`,
       backgroundImage: gradients.join(', '),
       cursor: 'pointer',
@@ -178,41 +198,46 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings }) => {
   };
 
   const canAccumulate24HoursFrom = (startMoment: dayjs.Dayjs): boolean => {
+    const DAILY_MINUTES = 24 * 60;
     let totalFreeMinutes = 0;
     let currentMoment = startMoment;
 
-    while (true) {
+    while (totalFreeMinutes < DAILY_MINUTES) {
       const currentDay = currentMoment.startOf('day');
-      const dayEnd = currentDay.endOf('day');
       const bookingsForDay = getBookingsForDate(currentDay);
       const freeSlots = getRawFreeSlotsForDay(currentDay, bookingsForDay);
 
-      const slot = freeSlots.find(
-        (s) => s.start.isSameOrBefore(currentMoment) && s.end.isAfter(currentMoment)
-      );
+      let slotFound: { start: dayjs.Dayjs; end: dayjs.Dayjs } | null = null;
+      for (const slot of freeSlots) {
+        if (slot.start.isSameOrBefore(currentMoment) && slot.end.isAfter(currentMoment)) {
+          slotFound = slot;
+          break;
+        }
+      }
 
-      if (!slot) {
+      if (!slotFound) {
         return false;
       }
 
-      const freeMinutes = slot.end.diff(currentMoment, 'minute');
+      const freeMinutes = slotFound.end.diff(currentMoment, 'minute');
       totalFreeMinutes += freeMinutes;
 
-      if (totalFreeMinutes >= 24 * 60) {
+      if (totalFreeMinutes >= DAILY_MINUTES) {
         return true;
       }
 
-      const minutesToMidnight = dayEnd.diff(slot.end, 'minute');
+      const minutesToMidnight = currentDay.endOf('day').diff(slotFound.end, 'minute');
       if (minutesToMidnight > 1) {
         return false;
       }
 
       currentMoment = currentDay.add(1, 'day');
     }
+
+    return true;
   };
 
   const getAvailableSlots = (date: dayjs.Dayjs, bookingsForDay: Rental[]) => {
-    const dayStart = date.startOf('day');
     const now = dayjs();
     const isToday = date.isSame(now, 'day');
 
@@ -698,7 +723,6 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings }) => {
           }
           const bookingsOnDate = getBookingsForDate(day);
           const isToday = day.isSame(dayjs(), 'day');
-          const isWeekend = day.day() === 0 || day.day() === 6;
           return (
             <Tooltip
               key={day.toString()}
@@ -733,13 +757,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({ bookings }) => {
                   sx={{
                     fontWeight: isToday ? 800 : 600,
                     fontSize: isToday ? '1.5rem' : '1.1rem',
-                    color: isToday
-                      ? theme.palette.success.darker
-                      : isWeekend
-                        ? theme.palette.secondary.dark
-                        : bookingsOnDate.length > 0
-                          ? theme.palette.success.dark
-                          : theme.palette.text.primary,
+                    color: getDayColor(day, bookingsOnDate),
                     lineHeight: 1,
                     textAlign: 'center',
                     width: '100%',

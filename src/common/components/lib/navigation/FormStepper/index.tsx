@@ -53,20 +53,25 @@ const FormStepper = <FormData extends AnyObject, FORM_STEP_ID>({
   const { id, steps, onSubmit, abortLabel, previousLabel, nextLabel, endLabel, sx, initialData } =
     props;
 
+  const isEditMode = initialData !== undefined;
+
   const clearDraft = (draftId: string) => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {
+      return;
+    }
     const key = 'steppers';
     const raw = localStorage.getItem(key);
-    if (!raw) return;
+    if (!raw) {
+      return;
+    }
     try {
-      const arr: any[] = JSON.parse(raw);
+      const arr: Any[] = JSON.parse(raw);
       const filtered = arr.filter((item) => item.id !== draftId);
       localStorage.setItem(key, JSON.stringify(filtered));
     } catch {
       localStorage.removeItem(key);
     }
   };
-
 
   const [activeStepId, setActiveStepId] = useState<FORM_STEP_ID>(steps[0].id);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -76,13 +81,23 @@ const FormStepper = <FormData extends AnyObject, FORM_STEP_ID>({
   const {
     loaded,
     setStepData,
-    getStepData,
     getAllData,
     isStepCompleted,
     setLastVisitedStepId,
     lastVisitedStepId,
     reset,
   } = useStepper<FormData, FORM_STEP_ID>(id);
+
+  useEffect(() => {
+    const allData = getAllData();
+    if (loaded && initialData && (!allData || Object.keys(allData).length === 0)) {
+      steps.forEach(({ id: stepId }) => {
+        setStepData(stepId, initialData as AnyObject);
+      });
+      setLastVisitedStepId(steps[0].id);
+    }
+  }, [loaded, initialData]);
+
   const activeStep = steps.find((step) => step.id === activeStepId);
   const isFirstStep = activeStepId === steps[0].id;
   const isLastStep = activeStepId === steps[steps.length - 1].id;
@@ -160,7 +175,6 @@ const FormStepper = <FormData extends AnyObject, FORM_STEP_ID>({
     ...getAllData(),
   };
 
-  console.log("qzdqzdqzd", getAllData())
   return (
     <Stack sx={sx} gap={4} flexDirection={vertical ? 'row' : 'column'}>
       <Stepper
@@ -174,8 +188,10 @@ const FormStepper = <FormData extends AnyObject, FORM_STEP_ID>({
           <Step
             key={step.id as string}
             id={step.id as string}
-            completed={isStepCompleted(step.id)}
-            disabled={!isStepCompleted(step.id) && lastVisitedStepId !== step.id}
+            completed={isEditMode || isStepCompleted(step.id)}
+            disabled={
+              isEditMode ? false : !isStepCompleted(step.id) && lastVisitedStepId !== step.id
+            }
           >
             <StepButton
               onClick={() => {

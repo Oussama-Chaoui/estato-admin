@@ -25,6 +25,7 @@ import { appWithTranslation } from 'next-i18next';
 import { frFR, enUS, esES } from '@mui/material/locale';
 import { getUserLanguage } from '@common/components/lib/utils/language';
 import { useRouter } from 'next/router';
+import { UploadFormContextProvider } from '@common/contexts/UploadFormContext';
 
 // declare module '@mui/material/Button' { // If we add a color, then we need to add the color in each component
 //    interface ButtonPropsColorOverrides {
@@ -114,14 +115,16 @@ const AppWrapper = (props: AppProps) => {
           <CssBaseline />
           <GlobalStyles />
           <DataProvider>
-            <RoutingHistoryProvider>
-              <SnackbarProvider>
-                <DialogProvider>
-                  <ProgressBar />
-                  <App {...props} />
-                </DialogProvider>
-              </SnackbarProvider>
-            </RoutingHistoryProvider>
+            <UploadFormContextProvider>
+              <RoutingHistoryProvider>
+                <SnackbarProvider>
+                  <DialogProvider>
+                    <ProgressBar />
+                    <App {...props} />
+                  </DialogProvider>
+                </SnackbarProvider>
+              </RoutingHistoryProvider>
+            </UploadFormContextProvider>
           </DataProvider>
         </ThemeProvider>
       </StyledEngineProvider>

@@ -206,6 +206,7 @@ const RHFImageDropzone = (props: RHFImageDropzoneProps) => {
             flex: 1,
             display: 'flex',
             borderRadius: 1,
+            minHeight: 300,
             overflow: 'hidden',
             cursor: readOnly ? 'default' : 'pointer',
             alignItems: 'center',

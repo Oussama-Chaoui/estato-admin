@@ -4,15 +4,29 @@ import useItems, { UseItems, UseItemsOptions, defaultOptions } from '@common/hoo
 import { Id } from '@common/defs/types';
 
 export interface CreateOneInput {
+  agent_id: Id;
   title: string;
+  slug: string;
+  excerpt?: string;
   content: string;
-  userId: Id;
+  status: string;
+  published_at?: string;
+  image_id: Id;
+  meta_title?: string;
+  meta_description?: string;
 }
 
 export interface UpdateOneInput {
-  title?: string;
-  content?: string;
-  // No postId here, because we don't want to allow changing the author of a post
+  agent_id: Id;
+  title: string;
+  slug: string;
+  excerpt?: string;
+  content: string;
+  status: string;
+  published_at?: string;
+  image_id: Id;
+  meta_title?: string;
+  meta_description?: string;
 }
 
 export type UpsertOneInput = CreateOneInput | UpdateOneInput;

@@ -1,4 +1,4 @@
-import { ComponentType, useEffect } from 'react';
+import { ComponentType, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import usePermissions from '@modules/permissions/hooks/usePermissions';
 import { Permission, PermissionCheck } from '@modules/permissions/defs/types';
@@ -15,10 +15,10 @@ const withPermissions = <P extends object>(
   const WithPermissions: ComponentType<P> = (props: P) => {
     const { can } = usePermissions();
     const router = useRouter();
+    const [allowed, setAllowed] = useState<boolean | null>(null);
 
-    const isPermission = (check: PermissionCheck): check is Permission => {
-      return (check as Permission).entity !== undefined;
-    };
+    const isPermission = (check: PermissionCheck): check is Permission =>
+      (check as Permission).entity !== undefined;
 
     const evaluatePermission = (permissionCheck: PermissionCheck): boolean => {
       if ('and' in permissionCheck) {
@@ -28,13 +28,12 @@ const withPermissions = <P extends object>(
         return permissionCheck.or?.some(evaluatePermission) ?? false;
       }
       if ('not' in permissionCheck) {
-        if (Array.isArray(permissionCheck.not)) {
-          return permissionCheck.not.every((subPermCheck) => !evaluatePermission(subPermCheck));
+        const notCheck = permissionCheck.not;
+        if (Array.isArray(notCheck)) {
+          return notCheck.every((pc) => !evaluatePermission(pc));
         }
-
-        return !evaluatePermission(permissionCheck.not!);
+        return !evaluatePermission(notCheck!);
       }
-
       if (isPermission(permissionCheck)) {
         return can(permissionCheck.entity, permissionCheck.action, permissionCheck.entityId);
       }
@@ -44,7 +43,8 @@ const withPermissions = <P extends object>(
     const updateEntityId = (id: string, permissionCheck: PermissionCheck): PermissionCheck => {
       if (
         isPermission(permissionCheck) &&
-        (!permissionCheck.entityId || permissionCheck.entityId !== Number(id))
+        permissionCheck.entityQueryKey &&
+        permissionCheck.entityId !== Number(id)
       ) {
         return { ...permissionCheck, entityId: Number(id) };
       }
@@ -61,23 +61,30 @@ const withPermissions = <P extends object>(
     };
 
     useEffect(() => {
-      // Vérifier les permissions avec entityId si router.query.id existe
-      if (router.query.id && typeof router.query.id === 'string') {
-        const id =
-          isPermission(requiredPermissions) && requiredPermissions.entityQueryKey
-            ? (router.query[requiredPermissions.entityQueryKey] as string)
-            : (router.query.id as string);
-
-        requiredPermissions = updateEntityId(id, requiredPermissions);
+      if (!router.isReady) {
+        return;
       }
-
-      const hasRequiredPermission = evaluatePermission(requiredPermissions);
-
-      if (!hasRequiredPermission) {
+      let permCheck = requiredPermissions;
+      const queryId = router.query.id;
+      if (typeof queryId === 'string') {
+        const key =
+          isPermission(requiredPermissions) && requiredPermissions.entityQueryKey
+            ? requiredPermissions.entityQueryKey
+            : 'id';
+        permCheck = updateEntityId(router.query[key] as string, requiredPermissions);
+      }
+      const hasPerm = evaluatePermission(permCheck);
+      if (hasPerm) {
+        setAllowed(true);
+      } else {
+        setAllowed(false);
         router.replace(redirectUrl);
       }
-    }, [requiredPermissions, redirectUrl, can, router]);
+    }, [router.isReady, router.query, can]);
 
+    if (allowed !== true) {
+      return null;
+    }
     return <WrappedComponent {...props} />;
   };
 

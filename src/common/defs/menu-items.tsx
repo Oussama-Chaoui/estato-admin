@@ -2,7 +2,7 @@ import Routes from '@common/defs/routes';
 import { CRUD_ACTION, NavGroup } from '@common/defs/types';
 import DashboardCustomizeRoundedIcon from '@mui/icons-material/DashboardCustomizeRounded';
 import Namespaces from '@common/defs/namespaces';
-import { Group, House } from '@mui/icons-material';
+import { Article, Category, Group, House, Label } from '@mui/icons-material';
 
 export const menuItems: NavGroup[] = [
   {
@@ -27,6 +27,30 @@ export const menuItems: NavGroup[] = [
         namespace: Namespaces.Properties,
         permission: CRUD_ACTION.READ,
         routes: Routes.Properties,
+      },
+      {
+        text: 'Posts',
+        icon: <Article />,
+        link: Routes.Posts.ReadAll,
+        namespace: Namespaces.Posts,
+        permission: CRUD_ACTION.READ,
+        routes: Routes.Posts,
+      },
+      {
+        text: 'Categories',
+        icon: <Category />,
+        link: Routes.Categories.ReadAll,
+        namespace: Namespaces.Categories,
+        permission: CRUD_ACTION.READ,
+        routes: Routes.Categories,
+      },
+      {
+        text: 'Tags',
+        icon: <Label />,
+        link: Routes.Tags.ReadAll,
+        namespace: Namespaces.Tags,
+        permission: CRUD_ACTION.READ,
+        routes: Routes.Tags,
       },
     ],
   },
