@@ -4,15 +4,153 @@
     "edit_one": "Edit the user",
     "items": "Users",
     "new_one": "New user",
-    "read_all": "User list"
+    "read_all": "User list",
+    "read_one": "User details"
   },
   "form": {
-    "step1_label": "Login information",
-    "step2_label": "Role"
+    "step1_label": "Select Role",
+    "step2_label": "User Information"
   },
   "list": {
     "created_at": "Registration date",
     "email": "Email",
-    "role": "Admin"
+    "role": "Admin",
+    "roles": "Roles",
+    "user_info": "User",
+    "no_name": "No name"
+  },
+  "stepper": {
+    "loading_user_details": "Loading user details...",
+    "loading_description": "Please wait while we fetch the user information."
+  },
+  "step1": {
+    "title": "Select User Role",
+    "description": "Choose the role(s) for this user. You can combine Admin with Agent roles.",
+    "roles": {
+      "admin": {
+        "title": "Administrator",
+        "description": "Full system access and management capabilities"
+      },
+      "agent": {
+        "title": "Real Estate Agent",
+        "description": "Property management and client interaction"
+      },
+      "client": {
+        "title": "Client",
+        "description": "Property browsing and rental services"
+      }
+    },
+    "alerts": {
+      "admin_agent_combination": "Perfect! Admin + Agent combination gives full system access plus property management capabilities.",
+      "admin_only_tip": "Add Agent role if you want this admin to appear in the agent listings for clients.",
+      "agent_only_tip": "Consider adding Admin role if this user needs system management access.",
+      "client_account": "Client Account: This user will only have access to browse properties and make rental requests."
+    },
+    "validation": {
+      "at_least_one_role_required": "At least one role must be selected"
+    }
+  },
+  "step2": {
+    "title": "User Information",
+    "description": "Complete the user details and role-specific information",
+    "sections": {
+      "basic_info": "Basic Information",
+      "agent_info": "Agent Information",
+      "client_info": "Client Information"
+    },
+    "fields": {
+      "full_name": "Full Name",
+      "email_address": "Email Address",
+      "phone_number": "Phone Number",
+      "password": "Password",
+      "password_placeholder_edit": "Leave blank to keep current password",
+      "password_placeholder_new": "Enter password",
+      "license_number": "License Number",
+      "experience_years": "Experience (years)",
+      "agency_name": "Agency Name",
+      "agency_address": "Agency Address",
+      "bio": "Bio",
+      "bio_placeholder": "Tell us about your experience and expertise...",
+      "nic_number": "NIC Number",
+      "nic_placeholder": "e.g., 1234567890123",
+      "passport_number": "Passport Number",
+      "passport_placeholder": "e.g., A12345678"
+    },
+    "validation": {
+      "name_required": "Name is required",
+      "email_required": "Email is required",
+      "email_invalid": "Invalid email format",
+      "phone_required": "Phone number is required",
+      "password_required": "Password is required",
+      "license_required": "License number is required",
+      "experience_required": "Experience is required",
+      "experience_min": "Experience must be 0 or greater",
+      "agency_name_required": "Agency name is required",
+      "agency_address_required": "Agency address is required",
+      "client_identifier_required": "Either NIC number or passport is required"
+    },
+    "client_description": "Please provide either a NIC number or passport number for identification."
+  },
+  "actions": {
+    "details": "Details",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "roles": {
+    "admin": "Admin",
+    "agent": "Agent",
+    "client": "Client"
+  },
+  "details": {
+    "contact_info": "Contact Information",
+    "system_info": "System Information",
+    "agent_info": "Agent Information",
+    "client_info": "Client Information",
+    "properties_portfolio": "Properties Portfolio",
+    "about": "About",
+    "not_provided": "Not provided",
+    "member_since": "Member Since",
+    "last_updated": "Last Updated",
+    "email_address": "Email Address",
+    "phone_number": "Phone Number",
+    "license_number": "License Number",
+    "experience": "Experience",
+    "years": "years",
+    "agency_name": "Agency Name",
+    "agency_address": "Agency Address",
+    "nic_number": "NIC Number",
+    "passport": "Passport",
+    "loading_properties": "Loading properties...",
+    "no_properties_found": "No Properties Found",
+    "no_properties_message": "This agent doesn't have any properties assigned yet.",
+    "sale_price": "Sale Price",
+    "monthly_rent": "Monthly Rent",
+    "daily_rate": "Daily Rate",
+    "price_not_available": "Price not available",
+    "location_not_specified": "Location not specified",
+    "untitled_property": "Untitled Property"
+  },
+  "profile": {
+    "title": "My Profile",
+    "contact": "Contact",
+    "personal_info": "Personal Information",
+    "professional_info": "Professional Information",
+    "statistics": "Statistics",
+    "admin_privileges": "Administrator Privileges",
+    "system_access": "Full System Access",
+    "system_access_description": "As an administrator, you have access to all system features, including user management, property management, and system settings.",
+    "not_provided": "Not provided",
+    "edit_email": "Edit email",
+    "edit_phone": "Edit phone",
+    "edit_password": "Edit password",
+    "edit_license": "Edit license number",
+    "edit_experience": "Edit experience",
+    "edit_bio": "Edit biography",
+    "edit_agency_name": "Edit agency name",
+    "edit_agency_address": "Edit agency address",
+    "new_password": "New password",
+    "confirm_password": "Confirm password",
+    "password_placeholder": "New password",
+    "confirm_password_placeholder": "Confirm your new password"
   }
 }

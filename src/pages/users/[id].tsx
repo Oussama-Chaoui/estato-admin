@@ -12,7 +12,7 @@ import useUsers from '@modules/users/hooks/api/useUsers';
 import { CRUD_ACTION, Id } from '@common/defs/types';
 import Namespaces from '@common/defs/namespaces';
 import Labels from '@common/defs/labels';
-import UpdateUserForm from '@modules/users/components/partials/UpdateUserForm';
+import UserDetails from '@modules/users/components/partials/UserDetails';
 import { useTranslation } from 'react-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
@@ -51,16 +51,16 @@ const UsersPage: NextPage = () => {
 
   return (
     <>
-      <PageHeader title={t(`user:${Labels.Users.EditOne}`)} />
+      <PageHeader title={t(`user:${Labels.Users.ReadOne}`)} />
       <CustomBreadcrumbs
         links={[
           { name: t('common:dashboard'), href: Routes.Common.Home },
           { name: t(`user:${Labels.Users.Items}`), href: Routes.Users.ReadAll },
-          { name: item ? item.email : t(`user:${Labels.Users.EditOne}`) },
+          { name: item ? item.name : t(`user:${Labels.Users.ReadOne}`) },
         ]}
       />
 
-      {item && <UpdateUserForm item={item} />}
+      {item && <UserDetails user={item} />}
     </>
   );
 };

@@ -2,18 +2,18 @@ import Routes from '@common/defs/routes';
 import { CRUD_ACTION, NavGroup } from '@common/defs/types';
 import DashboardCustomizeRoundedIcon from '@mui/icons-material/DashboardCustomizeRounded';
 import Namespaces from '@common/defs/namespaces';
-import { Article, Category, Group, House, Label } from '@mui/icons-material';
+import { Article, Group, House, Assignment } from '@mui/icons-material';
 
-export const menuItems: NavGroup[] = [
+export const getMenuItems = (t: (key: string) => string): NavGroup[] => [
   {
     items: [
       {
-        text: 'Dashboard',
+        text: t('leftbar:menu.dashboard'),
         icon: <DashboardCustomizeRoundedIcon />,
         link: Routes.Common.Home,
       },
       {
-        text: 'Users',
+        text: t('leftbar:menu.users'),
         icon: <Group />,
         link: Routes.Users.ReadAll,
         namespace: Namespaces.Users,
@@ -21,7 +21,7 @@ export const menuItems: NavGroup[] = [
         routes: Routes.Users,
       },
       {
-        text: 'Properties',
+        text: t('leftbar:menu.properties'),
         icon: <House />,
         link: Routes.Properties.ReadAll,
         namespace: Namespaces.Properties,
@@ -29,7 +29,7 @@ export const menuItems: NavGroup[] = [
         routes: Routes.Properties,
       },
       {
-        text: 'Posts',
+        text: t('leftbar:menu.posts'),
         icon: <Article />,
         link: Routes.Posts.ReadAll,
         namespace: Namespaces.Posts,
@@ -37,20 +37,12 @@ export const menuItems: NavGroup[] = [
         routes: Routes.Posts,
       },
       {
-        text: 'Categories',
-        icon: <Category />,
-        link: Routes.Categories.ReadAll,
-        namespace: Namespaces.Categories,
+        text: t('leftbar:menu.agent_applications'),
+        icon: <Assignment />,
+        link: Routes.AgentApplications.ReadAll,
+        namespace: Namespaces.AgentApplications,
         permission: CRUD_ACTION.READ,
-        routes: Routes.Categories,
-      },
-      {
-        text: 'Tags',
-        icon: <Label />,
-        link: Routes.Tags.ReadAll,
-        namespace: Namespaces.Tags,
-        permission: CRUD_ACTION.READ,
-        routes: Routes.Tags,
+        routes: Routes.AgentApplications,
       },
     ],
   },

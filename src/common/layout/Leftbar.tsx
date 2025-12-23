@@ -1,29 +1,25 @@
 import {
   List,
   ListItemText,
-  Stack,
   Tooltip,
   IconButton,
   useTheme,
   useMediaQuery,
   Button,
+  Box,
+  Avatar,
+  Divider,
 } from '@mui/material';
 import Drawer from '@mui/material/Drawer';
-import Box from '@mui/material/Box';
 import { useRouter } from 'next/router';
 import useAuth from '@modules/auth/hooks/api/useAuth';
 import { useState, useEffect } from 'react';
 import Routes from '@common/defs/routes';
 import usePermissions from '@modules/permissions/hooks/usePermissions';
-import {
-  AddRounded,
-  ChevronRight,
-  LogoutRounded,
-  Settings as SettingsIcon,
-} from '@mui/icons-material';
+import { AddRounded, ChevronRight, LogoutRounded, AccountCircle } from '@mui/icons-material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { CRUD_ACTION, NavGroup, NavItem } from '@common/defs/types';
-import { menuItems as menuGroups } from '@common/defs/menu-items';
+import { getMenuItems } from '@common/defs/menu-items';
 import NestedDrawer from '@common/components/lib/navigation/Drawers/NestedDrawer';
 import {
   StyledLinkNavItem,
@@ -33,7 +29,6 @@ import {
 } from '@common/components/lib/navigation/Drawers/styled-drawer-items';
 import { useTranslation } from 'react-i18next';
 import { alpha } from '@mui/material/styles';
-import Logo from '@common/assets/svgs/Logo';
 
 interface LeftbarProps {
   open: boolean;
@@ -68,6 +63,7 @@ const Leftbar = (props: LeftbarProps) => {
   };
 
   const filteredGroups = () => {
+    const menuGroups = getMenuItems(t);
     const groups = menuGroups
       .map((menuGroup) => ({
         ...menuGroup,
@@ -92,7 +88,7 @@ const Leftbar = (props: LeftbarProps) => {
           item = {
             ...item,
             suffix: {
-              tooltip: 'Créer',
+              tooltip: t('leftbar:create'),
               icon: <AddRounded />,
               link: menuItem.routes.CreateOne,
             },
@@ -111,7 +107,8 @@ const Leftbar = (props: LeftbarProps) => {
 
   useEffect(() => {
     setNavEntries(filteredGroups());
-  }, [user]);
+  }, [user, t]);
+
   return (
     <>
       <Drawer
@@ -122,11 +119,12 @@ const Leftbar = (props: LeftbarProps) => {
         PaperProps={{
           sx: {
             width: LEFTBAR_WIDTH,
-            bgcolor: 'background.paper',
-            borderRightStyle: 'dashed',
-            marginTop: 0.5,
-            px: 3,
+            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+            borderRight: 'none',
+            marginTop: 0.4,
+            px: 0,
             overflow: 'hidden',
+            boxShadow: '0 3px 16px rgba(0,0,0,0.15)',
           },
         }}
         sx={{
@@ -136,19 +134,45 @@ const Leftbar = (props: LeftbarProps) => {
         <Box
           sx={{
             position: 'absolute',
-            bottom: -268,
-            left: '-2%',
-            transform: 'translateX(-50%)',
-            width: 611,
-            height: 500,
+            top: -80,
+            right: -80,
+            width: 160,
+            height: 160,
             borderRadius: '50%',
-            border: `78px solid #F0F2F8`,
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.primary.lighter,
+              0.3
+            )} 0%, ${alpha(theme.palette.primary.light, 0.2)} 100%)`,
+            zIndex: 0,
+            pointerEvents: 'none',
+          }}
+        />
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: -40,
+            left: -40,
+            width: 120,
+            height: 120,
+            borderRadius: '50%',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.primary.light,
+              0.2
+            )} 0%, ${alpha(theme.palette.primary.main, 0.1)} 100%)`,
             zIndex: 0,
             pointerEvents: 'none',
           }}
         />
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+            position: 'relative',
+            zIndex: 1,
+          }}
+        >
           <NestedDrawer
             open={subNavItems !== undefined && subNavItems.length > 0}
             leftBarWidth={LEFTBAR_WIDTH}
@@ -157,24 +181,28 @@ const Leftbar = (props: LeftbarProps) => {
             router={router}
             level={1}
           />
-          <Stack
-            direction="row"
-            justifyContent="center"
-            alignItems="flex-end"
-            sx={{
-              py: 4,
-              marginBottom: 2,
-              borderBottomWidth: 1,
-              borderBottomColor: 'grey.300',
-            }}
-          >
-            <Logo isFullLogo onClick={() => router.push(Routes.Common.Home)} />
-          </Stack>
-          <Box sx={{ flex: 1, overflow: 'auto', mt: 2 }}>
-            <List>
+
+          <Box sx={{ flex: 1, overflow: 'auto', mt: 12 }}>
+            <List sx={{ px: 1.6 }}>
               {navEntries.map((entry, groupIndex) => (
                 <Box key={groupIndex}>
-                  {entry.text && <StyledSubheader disableSticky>{entry.text}</StyledSubheader>}
+                  {entry.text && (
+                    <StyledSubheader
+                      disableSticky
+                      sx={{
+                        color: alpha('#ffffff', 0.9),
+                        fontWeight: 600,
+                        fontSize: '0.5rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.6px',
+                        mb: 0.8,
+                        mt: 1.6,
+                        px: 0.8,
+                      }}
+                    >
+                      {entry.text}
+                    </StyledSubheader>
+                  )}
                   {entry.items.map((item, itemIndex) => {
                     let link = item.link;
                     if (link.length > 1) {
@@ -197,7 +225,7 @@ const Leftbar = (props: LeftbarProps) => {
                         passHref
                         href={link}
                         className={isActive ? 'active' : ''}
-                        sx={{ display: 'flex', alignItems: 'center' }}
+                        sx={{ display: 'flex', alignItems: 'center', mb: 0.4 }}
                       >
                         <StyledListItemButton
                           onMouseEnter={() => {
@@ -210,21 +238,27 @@ const Leftbar = (props: LeftbarProps) => {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
-                            px: 2,
-                            gap: 2,
+                            px: 1.6,
+                            py: 1.2,
+                            gap: 1.6,
+                            borderRadius: 1.6,
+                            transition: 'all 0.2s ease-in-out',
+                            background: isActive ? 'rgba(255,255,255,0.15)' : 'transparent',
+                            color: isActive ? '#ffffff' : alpha('#ffffff', 0.9),
+                            border: isActive
+                              ? `1px solid ${alpha('#ffffff', 0.3)}`
+                              : '1px solid transparent',
                             '&:hover': {
-                              background: `linear-gradient(0deg, ${alpha(
-                                theme.palette.primary.main,
-                                0.8
-                              )}, ${alpha(theme.palette.primary.dark, 0.7)})`,
-                              color: '#fff',
-                            },
-                            '&:hover .MuiListItemText-root': {
-                              color: '#fff',
+                              background: isActive
+                                ? 'rgba(255,255,255,0.2)'
+                                : alpha('#ffffff', 0.1),
+                              color: '#ffffff',
+                              transform: 'translateX(3px)',
+                              border: `1px solid ${alpha('#ffffff', 0.3)}`,
                             },
                             '.active &': {
-                              background: `linear-gradient(0deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-                              color: '#fff',
+                              background: 'rgba(255,255,255,0.15)',
+                              color: '#ffffff',
                             },
                           }}
                         >
@@ -234,13 +268,20 @@ const Leftbar = (props: LeftbarProps) => {
                               alignItems: 'center',
                               justifyContent: 'center',
                               mr: 0,
+                              color: 'inherit',
                             }}
                           >
                             {iconToShow}
                           </StyledListItemIcon>
                           <ListItemText
                             primary={item.text}
-                            sx={{ color: isActive ? '#fff' : 'grey.900' }}
+                            sx={{
+                              color: 'inherit',
+                              '& .MuiTypography-root': {
+                                fontWeight: isActive ? 600 : 500,
+                                fontSize: '0.75rem',
+                              },
+                            }}
                           />
                           {item.suffix && (
                             <Tooltip title={item.suffix.tooltip}>
@@ -255,8 +296,12 @@ const Leftbar = (props: LeftbarProps) => {
                                 }}
                                 sx={{
                                   color: 'inherit',
+                                  background: alpha('#ffffff', 0.1),
+                                  '&:hover': {
+                                    background: alpha('#ffffff', 0.2),
+                                  },
                                   '& .MuiSvgIcon-root': {
-                                    fontSize: '1.25rem',
+                                    fontSize: '0.875rem',
                                   },
                                 }}
                               >
@@ -264,7 +309,19 @@ const Leftbar = (props: LeftbarProps) => {
                               </IconButton>
                             </Tooltip>
                           )}
-                          {item.children && item.children.length > 0 && <ChevronRight />}
+                          {item.children && item.children.length > 0 && (
+                            <ChevronRight
+                              sx={{
+                                color: 'inherit',
+                                transition: 'transform 0.2s',
+                                transform:
+                                  hoveredItem?.groupIndex === groupIndex &&
+                                  hoveredItem?.itemIndex === itemIndex
+                                    ? 'translateX(2px)'
+                                    : 'translateX(0)',
+                              }}
+                            />
+                          )}
                         </StyledListItemButton>
                       </StyledLinkNavItem>
                     );
@@ -275,41 +332,97 @@ const Leftbar = (props: LeftbarProps) => {
           </Box>
 
           {user && (
-            <Box sx={{ mt: 'auto', mb: 2 }}>
+            <Box sx={{ mt: 'auto', mb: 1.6, px: 1.6 }}>
+              <Divider sx={{ mb: 2.4, borderColor: alpha('#ffffff', 0.2) }} />
+
               <Box
                 sx={{
-                  mx: 'auto',
-                  mb: 4,
-                  mt: 5,
-                  pb: 2,
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 1,
                   position: 'relative',
-                  maxWidth: '150px',
                 }}
               >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.6,
+                    p: 1.6,
+                    borderRadius: 1.6,
+                    background: alpha('#ffffff', 0.1),
+                    border: `1px solid ${alpha('#ffffff', 0.2)}`,
+                    backdropFilter: 'blur(10px)',
+                    mb: 1.6,
+                  }}
+                >
+                  <Avatar
+                    src={user.photo?.url}
+                    sx={{
+                      width: 32,
+                      height: 32,
+                      background: '#ffffff',
+                      color: theme.palette.primary.main,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {!user.photo?.url && (user.name?.charAt(0) || 'U')}
+                  </Avatar>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Box
+                      sx={{
+                        fontSize: '0.6rem',
+                        fontWeight: 600,
+                        color: '#ffffff',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {user.name || t('leftbar:user_default')}
+                    </Box>
+                    <Box
+                      sx={{
+                        fontSize: '0.5rem',
+                        color: alpha('#ffffff', 0.8),
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {user.email}
+                    </Box>
+                  </Box>
+                </Box>
+
                 <Button
                   onClick={() => router.push(Routes.Users.Me)}
                   sx={{
                     display: 'flex',
                     justifyContent: 'flex-start',
-                    color: 'grey.500',
-                    px: 2,
+                    color: alpha('#ffffff', 0.9),
+                    px: 1.6,
+                    py: 1.2,
+                    borderRadius: 1.6,
+                    transition: 'all 0.2s ease-in-out',
                     '&:hover': {
-                      color: 'black',
+                      background: alpha('#ffffff', 0.15),
+                      color: '#ffffff',
+                      transform: 'translateX(3px)',
                     },
-                    letterSpacing: '0.5px',
+                    letterSpacing: '0.4px',
                     fontWeight: 500,
+                    fontSize: '0.75rem',
                     '.MuiButton-startIcon': {
                       justifyContent: 'center',
                     },
                   }}
-                  startIcon={<SettingsIcon />}
+                  startIcon={<AccountCircle />}
                   variant="text"
                 >
-                  {t('leftbar:settings')}
+                  {t('leftbar:my_profile')}
                 </Button>
+
                 <Button
                   onClick={() => {
                     router.push(Routes.Common.Home);
@@ -318,13 +431,19 @@ const Leftbar = (props: LeftbarProps) => {
                   sx={{
                     display: 'flex',
                     justifyContent: 'flex-start',
-                    color: 'grey.500',
-                    px: 2,
+                    color: alpha('#ffffff', 0.8),
+                    px: 1.6,
+                    py: 1.2,
+                    borderRadius: 1.6,
+                    transition: 'all 0.2s ease-in-out',
                     '&:hover': {
-                      color: 'black',
+                      background: alpha('#ffffff', 0.15),
+                      color: '#ffffff',
+                      transform: 'translateX(3px)',
                     },
-                    letterSpacing: '0.5px',
+                    letterSpacing: '0.4px',
                     fontWeight: 500,
+                    fontSize: '0.75rem',
                     '.MuiButton-startIcon': {
                       justifyContent: 'center',
                     },
@@ -344,18 +463,23 @@ const Leftbar = (props: LeftbarProps) => {
           sx={{
             position: 'absolute',
             display: 'flex',
-            top: 6,
-            left: { xs: 6, sm: 14 },
+            top: 4.8,
+            left: { xs: 4.8, sm: 11.2 },
           }}
         >
           <IconButton
             onClick={toggleLeftbar}
             sx={{
               display: open ? 'none' : 'block',
-              height: 40,
+              height: 32,
+              background: alpha(theme.palette.primary.main, 0.1),
+              color: theme.palette.primary.main,
+              '&:hover': {
+                background: alpha(theme.palette.primary.main, 0.2),
+              },
             }}
           >
-            <MenuIcon fontSize="medium" sx={{ color: 'grey.700' }} />
+            <MenuIcon fontSize="medium" />
           </IconButton>
         </Box>
       )}

@@ -10,17 +10,13 @@ import {
   LockClock,
   AdminPanelSettings,
   GpsFixed,
-  OpenInNew,
   Email,
   Phone,
   Business,
   PeopleAlt,
-  Star,
   Bed,
   Bathtub,
   Garage,
-  Check,
-  Cancel,
   AccessTime,
   PriceCheck,
   PhotoCamera,
@@ -35,87 +31,135 @@ import {
   Button,
   Card,
   CardContent,
-  IconButton,
-  Tooltip,
   CardMedia,
 } from '@mui/material';
 import { Property } from '@modules/properties/defs/types';
 import { getAmenityIcon } from '@modules/properties/defs/utils';
-import PropertyStatus from '@modules/properties/components/partials/PropertyStatus';
-import BookingCalendar from './BookingCalendar';
+import PropertyBookingCalendar from './PropertyBookingCalendar';
 import { Agent } from '@modules/agents/defs/types';
 import { useRouter } from 'next/router';
-import Routes from '@modules/properties/defs/routes';
 import { useDialogContext } from '@common/contexts/DialogContext';
 import useProperties from '@modules/properties/hooks/api/useProperties';
 import PropertyDisplay from './PropertyDisplay';
+import Routes from '@common/defs/routes';
+import { useTranslation } from 'react-i18next';
+import { getTranslatedText } from '@common/utils/translations';
+import { getTranslatedAmenityName } from '@common/utils/amenities';
 
 interface PropertyDetailsProps {
   property: Property;
 }
 
 const PropertyDetails = ({ property }: PropertyDetailsProps) => {
+  const { t, i18n } = useTranslation(['property', 'amenities']);
   const router = useRouter();
   const { openConfirmDialog } = useDialogContext();
   const { deleteOne } = useProperties();
 
   const technicalDetails = [
     {
+      icon: <LocationOn />,
+      label: t('property:details.location'),
+      value: `${getTranslatedText(
+        property.location.city?.names,
+        i18n.language,
+        t('property:details.unknown_location')
+      )}, ${getTranslatedText(
+        property.location.city?.region?.names,
+        i18n.language,
+        t('property:details.unknown_location')
+      )}`,
+    },
+    {
       icon: <Apartment />,
-      label: `Type`,
-      value: property.type.replace('_', ' '),
+      label: t('property:details.type'),
+      value: t(`property:types.${property.type.toLowerCase()}`),
     },
     {
       icon: <CalendarToday />,
-      label: `Year Built`,
+      label: t('property:details.year_built'),
       value: property.yearBuilt,
     },
     {
-      icon: <SquareFoot />,
-      label: `Lot Size`,
-      value: `${property.lotSize} m²`,
-    },
-    {
       icon: <LockClock />,
-      label: `Created At`,
-      value: new Date(property.createdAt).toLocaleString(),
+      label: t('property:details.created_at'),
+      value: new Date(property.createdAt).toLocaleString(i18n.language),
     },
   ];
 
   const features = [
-    { icon: <Bed />, label: 'Bedrooms', value: property.features[0].bedrooms },
-    { icon: <Bathtub />, label: 'Bathrooms', value: property.features[0].bathrooms },
-    { icon: <SquareFoot />, label: 'Area', value: `${property.features[0].area} m²` },
-    { icon: <Garage />, label: 'Garages', value: property.features[0].garages },
     {
-      icon: property.features[0].pool ? <Check color="success" /> : <Cancel color="error" />,
-      label: 'Pool',
-      value: property.features[0].pool ? 'Yes' : 'No',
+      icon: <Bed />,
+      label: t('property:details.bedrooms'),
+      value: property.features[0]?.bedrooms || 0,
+    },
+    {
+      icon: <Bathtub />,
+      label: t('property:details.bathrooms'),
+      value: property.features[0]?.bathrooms || 0,
+    },
+    {
+      icon: <SquareFoot />,
+      label: t('property:details.area'),
+      value: `${property.features[0]?.area || 0} m²`,
+    },
+    {
+      icon: <Garage />,
+      label: t('property:details.garages'),
+      value: property.features[0]?.garages || 0,
     },
   ];
 
   const mapUrl = `https://maps.google.com/maps?q=${property.location.latitude},${property.location.longitude}&z=15&output=embed`;
 
   return (
-    <Card sx={{ borderRadius: 4, boxShadow: 3, p: 2 }}>
+    <Card sx={{ borderRadius: 1, boxShadow: 3, p: 2 }}>
       <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-          <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-              <AdminPanelSettings color="primary" />
-              <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                {property.title}
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', lg: 'row' },
+            justifyContent: 'space-between',
+            mb: 4,
+            gap: { xs: 3, md: 4 },
+          }}
+        >
+          <Box
+            sx={{
+              flex: 1,
+              maxWidth: { xs: '100%', lg: '65%' },
+              order: { xs: 2, lg: 1 },
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: { xs: '1.75rem', sm: '2rem', md: '2.125rem' },
+                  lineHeight: 1.2,
+                }}
+              >
+                {getTranslatedText(property.title, i18n.language, t('property:details.untitled'))}
               </Typography>
             </Box>
             <Typography
               variant="body1"
               color="text.secondary"
-              sx={{ mt: 1, mb: 3, lineHeight: 1.6 }}
+              sx={{
+                mt: 1,
+                mb: 3,
+                lineHeight: 1.6,
+                fontSize: { xs: '0.9rem', md: '1rem' },
+              }}
             >
-              {property.description}
+              {getTranslatedText(
+                property.description,
+                i18n.language,
+                t('property:details.no_description')
+              )}
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              <PropertyStatus status={property.status} />
               <Chip
                 label={`ID: ${property.id}`}
                 variant="filled"
@@ -126,7 +170,7 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
                   px: 1.5,
                   py: 1,
                   minWidth: 90,
-                  borderRadius: '6px',
+                  borderRadius: 1,
                   textTransform: 'capitalize',
                   letterSpacing: 0.2,
                   transition: 'all 0.2s ease-in-out',
@@ -145,43 +189,49 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
 
           <Box
             sx={{
-              textAlign: 'right',
-              p: 1.5,
+              textAlign: { xs: 'center', lg: 'right' },
+              p: { xs: 2, md: 2.5 },
               border: '1px solid',
               borderColor: 'divider',
-              borderRadius: 2,
+              borderRadius: 1,
               backgroundColor: 'background.paper',
               transition: 'all 0.3s ease',
-              maxWidth: 300,
+              minWidth: { xs: '100%', lg: 320 },
+              maxWidth: { xs: '100%', lg: 380 },
+              flexShrink: 0,
+              alignSelf: { xs: 'stretch', lg: 'flex-start' },
+              order: { xs: 1, lg: 2 },
               '&:hover': {
                 boxShadow: 1,
                 borderColor: 'primary.light',
               },
             }}
           >
-            {/* Main Price Section */}
             <Grid container spacing={1}>
-              {/* Sale Price */}
               <Grid item xs={12}>
                 <Box
                   sx={{
-                    p: 1,
-                    borderRadius: 1.5,
+                    p: { xs: 1.5, md: 1 },
+                    borderRadius: 1,
                     backgroundColor: 'primary.lighter',
                   }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.25 }}>
-                    <PriceCheck fontSize="small" color="primary" sx={{ fontSize: '18px' }} />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                    <PriceCheck
+                      fontSize="small"
+                      color="primary"
+                      sx={{ fontSize: { xs: '20px', md: '18px' } }}
+                    />
                     <Typography
                       variant="overline"
                       sx={{
                         color: 'text.secondary',
                         letterSpacing: '0.5px',
                         lineHeight: 1,
-                        fontSize: '0.7rem',
+                        fontSize: { xs: '0.75rem', md: '0.7rem' },
                       }}
                     >
-                      Sale Price
+                      {t('property:details.sale_price')}
                     </Typography>
                   </Box>
                   <Box
@@ -198,40 +248,48 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
                         fontWeight: 800,
                         color: 'primary.dark',
                         lineHeight: 1,
+                        fontSize: { xs: '1.5rem', md: '1.25rem' },
                       }}
                     >
                       {property.salePrice.toLocaleString()}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: { xs: '0.9rem', md: '0.875rem' } }}
+                    >
                       {property.currency}
                     </Typography>
                   </Box>
                 </Box>
               </Grid>
 
-              {/* Other Prices */}
               <Grid item container xs={12} spacing={1}>
                 {property.monthlyPriceEnabled && (
                   <Grid item xs={6}>
                     <Box
                       sx={{
-                        p: 1,
+                        p: { xs: 1.5, md: 1 },
                         border: '1px solid',
                         borderColor: 'divider',
-                        borderRadius: 1.5,
+                        borderRadius: 1,
                       }}
                     >
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
-                        <CalendarToday fontSize="small" color="primary" sx={{ fontSize: '16px' }} />
+                        <CalendarToday
+                          fontSize="small"
+                          color="primary"
+                          sx={{ fontSize: { xs: '18px', md: '16px' } }}
+                        />
                         <Typography
                           variant="overline"
                           sx={{
                             color: 'text.secondary',
                             letterSpacing: '0.5px',
-                            fontSize: '0.7rem',
+                            fontSize: { xs: '0.75rem', md: '0.7rem' },
                           }}
                         >
-                          Monthly
+                          {t('property:details.monthly')}
                         </Typography>
                       </Box>
                       <Box
@@ -242,11 +300,21 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
                           justifyContent: 'center',
                         }}
                       >
-                        <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            fontWeight: 700,
+                            fontSize: { xs: '1rem', md: '0.875rem' },
+                          }}
+                        >
                           {property.monthlyPrice.toLocaleString()}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          /mo
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ fontSize: { xs: '0.8rem', md: '0.75rem' } }}
+                        >
+                          {property.currency}/{t('property:details.per_month')}
                         </Typography>
                       </Box>
                     </Box>
@@ -257,23 +325,27 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
                   <Grid item xs={6}>
                     <Box
                       sx={{
-                        p: 1,
+                        p: { xs: 1.5, md: 1 },
                         border: '1px solid',
                         borderColor: 'divider',
-                        borderRadius: 1.5,
+                        borderRadius: 1,
                       }}
                     >
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
-                        <AccessTime fontSize="small" color="primary" sx={{ fontSize: '16px' }} />
+                        <AccessTime
+                          fontSize="small"
+                          color="primary"
+                          sx={{ fontSize: { xs: '18px', md: '16px' } }}
+                        />
                         <Typography
                           variant="overline"
                           sx={{
                             color: 'text.secondary',
                             letterSpacing: '0.5px',
-                            fontSize: '0.7rem',
+                            fontSize: { xs: '0.75rem', md: '0.7rem' },
                           }}
                         >
-                          Daily
+                          {t('property:details.daily')}
                         </Typography>
                       </Box>
                       <Box
@@ -284,11 +356,21 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
                           justifyContent: 'center',
                         }}
                       >
-                        <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            fontWeight: 700,
+                            fontSize: { xs: '1rem', md: '0.875rem' },
+                          }}
+                        >
                           {property.dailyPrice.toLocaleString()}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          /day
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ fontSize: { xs: '0.8rem', md: '0.75rem' } }}
+                        >
+                          {property.currency}/{t('property:details.per_day')}
                         </Typography>
                       </Box>
                     </Box>
@@ -299,15 +381,16 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
           </Box>
         </Box>
 
-        {/* Admin Quick Actions */}
         <Box sx={{ mb: 4, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
           <Button
             variant="contained"
             startIcon={<Edit />}
             color="primary"
-            onClick={() => router.push(Routes.UpdateOne.replace('{id}', property.id.toString()))}
+            onClick={() =>
+              router.push(Routes.Properties.UpdateOne.replace('{id}', property.id.toString()))
+            }
           >
-            Edit Property
+            {t('property:details.edit_property')}
           </Button>
           <Button
             variant="outlined"
@@ -315,23 +398,23 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
             color="error"
             onClick={() => {
               openConfirmDialog(
-                'Supprimer',
-                'Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible.',
+                t('property:details.delete_confirmation_title'),
+                t('property:details.delete_confirmation_message'),
                 async () => {
                   const response = await deleteOne(property.id, {
                     displayProgress: true,
                     displaySuccess: true,
                   });
                   if (response.success) {
-                    router.push(Routes.ReadAll);
+                    router.push(Routes.Properties.ReadAll);
                   }
                 },
-                'Oui, supprimer',
+                t('property:details.delete_confirm_button'),
                 'error'
               );
             }}
           >
-            Delete Property
+            {t('property:details.delete_property')}
           </Button>
         </Box>
 
@@ -348,12 +431,11 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
             }}
           >
             <PhotoCamera color="primary" fontSize="medium" />
-            Property Images
+            {t('property:details.property_images')}
           </Typography>
           <PropertyDisplay images={property.images} />
         </Box>
 
-        {/* Availabilities & Booking Logs Section */}
         <Box sx={{ mb: 4 }}>
           <Typography
             variant="h5"
@@ -367,12 +449,11 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
             }}
           >
             <CalendarToday fontSize="medium" color="primary" />
-            Availabilities & Booking Logs
+            {t('property:details.availabilities_booking')}
           </Typography>
-          <BookingCalendar bookings={property.rentals} />
+          <PropertyBookingCalendar property={property} />
         </Box>
 
-        {/* Property Features */}
         <Box sx={{ mb: 4 }}>
           <Typography
             variant="h5"
@@ -386,11 +467,10 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
             }}
           >
             <AdminPanelSettings fontSize="large" color="primary" />
-            Property Specifications
+            {t('property:details.property_specifications')}
           </Typography>
 
           <Grid container spacing={3}>
-            {/* Key Features - Higher Priority */}
             <Grid item xs={12} ml={2}>
               <Typography
                 variant="h6"
@@ -404,7 +484,7 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
                 }}
               >
                 <CheckCircle fontSize="small" color="primary" />
-                Key Features
+                {t('property:details.key_features')}
               </Typography>
               <Grid container spacing={3}>
                 {features.map((feature, index) => (
@@ -414,7 +494,7 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
                         p: 2,
                         border: '1px solid',
                         borderColor: 'divider',
-                        borderRadius: 2,
+                        borderRadius: 1,
                         height: '100%',
                         transition: 'all 0.2s ease',
                         '&:hover': {
@@ -438,7 +518,6 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
               </Grid>
             </Grid>
 
-            {/* Technical Specifications - Lower Priority */}
             <Grid item xs={12} ml={2}>
               <Typography
                 variant="h6"
@@ -452,7 +531,7 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
                 }}
               >
                 <VerifiedUser fontSize="small" color="primary" />
-                Technical Specifications
+                {t('property:details.technical_specifications')}
               </Typography>
               <Grid container spacing={3}>
                 {technicalDetails.map((detail, index) => (
@@ -462,7 +541,7 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
                         p: 2,
                         border: '1px solid',
                         borderColor: 'divider',
-                        borderRadius: 2,
+                        borderRadius: 1,
                         height: '100%',
                         transition: 'all 0.2s ease',
                         '&:hover': {
@@ -488,7 +567,105 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
           </Grid>
         </Box>
 
-        {/* Location Section */}
+        <Box sx={{ mb: 4 }}>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 700,
+              mb: 3,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              color: 'text.primary',
+            }}
+          >
+            <CheckCircle fontSize="large" color="primary" />
+            {t('property:details.property_amenities')}
+          </Typography>
+
+          <Card
+            variant="outlined"
+            sx={{
+              borderRadius: 1,
+            }}
+          >
+            <Box sx={{ p: 2.5 }}>
+              <Grid container spacing={1.5} sx={{ mb: 2 }}>
+                {property.amenities.map((amenity, index) => (
+                  <Grid item xs={6} sm={4} md={3} key={index}>
+                    <Box
+                      sx={{
+                        p: 2,
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        borderRadius: 1,
+                        height: '100%',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        textAlign: 'center',
+                        '&:hover': {
+                          borderColor: 'primary.main',
+                          boxShadow: 1,
+                        },
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: 40,
+                          height: 40,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'primary.main',
+                          mb: 1,
+                        }}
+                      >
+                        {getAmenityIcon(amenity.icon, { fontSize: 'small' })}
+                      </Box>
+                      <Typography variant="body2" fontWeight={500}>
+                        {getTranslatedAmenityName(amenity.name, t)}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
+
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  pt: 2,
+                  borderTop: '1px solid',
+                  borderColor: 'divider',
+                }}
+              >
+                <Typography variant="caption" color="text.secondary">
+                  {t('property:details.total_listed_amenities')}
+                </Typography>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    backgroundColor: 'primary.light',
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: 1,
+                  }}
+                >
+                  <CheckCircle fontSize="small" color="primary" />
+                  <Typography variant="body2" fontWeight={600} color="primary.dark">
+                    {property.amenities.length} {t('property:details.amenities_count')}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          </Card>
+        </Box>
+
         <Box sx={{ mb: 4 }}>
           <Typography
             variant="h6"
@@ -501,12 +678,20 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
             }}
           >
             <LocationOn fontSize="medium" color="primary" />
-            Property Location
+            {t('property:details.property_location')}
           </Typography>
-          <Card variant="outlined" sx={{ borderRadius: 2 }}>
+          <Card variant="outlined" sx={{ borderRadius: 1 }}>
             <Box sx={{ p: 2 }}>
               <Typography variant="subtitle1" fontWeight={500}>
-                {property.location.city}, {property.location.region}
+                {`${getTranslatedText(
+                  property.location.city?.names,
+                  i18n.language,
+                  t('property:details.unknown_location')
+                )}, ${getTranslatedText(
+                  property.location.city?.region?.names,
+                  i18n.language,
+                  t('property:details.unknown_location')
+                )}`}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, my: 1 }}>
                 <GpsFixed fontSize="small" color="action" />
@@ -520,7 +705,7 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
               <Box
                 sx={{
                   height: 250,
-                  borderRadius: 2,
+                  borderRadius: 1,
                   overflow: 'hidden',
                   position: 'relative',
                 }}
@@ -531,7 +716,7 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
                   frameBorder="0"
                   scrolling="no"
                   src={mapUrl}
-                  title="Property Location Map"
+                  title={t('property:details.property_location_map')}
                   style={{
                     border: 0,
                     filter: 'grayscale(20%)',
@@ -556,111 +741,6 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
 
         <Divider sx={{ my: 4 }} />
 
-        {/* Amenities Section */}
-        <Grid container spacing={4}>
-          <Grid item xs={12}>
-            <Box sx={{ mb: 4 }}>
-              <Typography
-                variant="h6"
-                gutterBottom
-                sx={{
-                  fontWeight: 700,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.5,
-                  color: 'text.primary',
-                }}
-              >
-                <CheckCircle color="primary" fontSize="medium" sx={{ mb: 0.5 }} />
-                Amenities Management
-              </Typography>
-
-              <Card
-                variant="outlined"
-                sx={{
-                  borderRadius: 3,
-                }}
-              >
-                <Box sx={{ p: 2.5 }}>
-                  <Grid container spacing={1.5} sx={{ mb: 2 }}>
-                    {property.amenities.map((amenity, index) => (
-                      <Grid item xs={6} sm={4} md={3} key={index}>
-                        <Box
-                          sx={{
-                            p: 2,
-                            border: '1px solid',
-                            borderColor: 'divider',
-                            borderRadius: 2,
-                            height: '100%',
-                            transition: 'all 0.2s ease',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            textAlign: 'center',
-                            '&:hover': {
-                              borderColor: 'primary.main',
-                              boxShadow: 1,
-                            },
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              width: 40,
-                              height: 40,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              color: 'primary.main',
-                              mb: 1,
-                            }}
-                          >
-                            {getAmenityIcon(amenity.icon, 24)}
-                          </Box>
-                          <Typography variant="body2" fontWeight={500}>
-                            {amenity.name}
-                          </Typography>
-                        </Box>
-                      </Grid>
-                    ))}
-                  </Grid>
-
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      pt: 2,
-                      borderTop: '1px solid',
-                      borderColor: 'divider',
-                    }}
-                  >
-                    <Typography variant="caption" color="text.secondary">
-                      Total listed amenities
-                    </Typography>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                        backgroundColor: 'primary.light',
-                        px: 1.5,
-                        py: 0.5,
-                        borderRadius: 1.5,
-                      }}
-                    >
-                      <CheckCircle fontSize="small" color="primary" />
-                      <Typography variant="body2" fontWeight={600} color="primary.dark">
-                        {property.amenities.length} Amenities
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
-              </Card>
-            </Box>
-          </Grid>
-        </Grid>
-
-        {/* Agents Details Section */}
         <Box>
           <Typography
             variant="h5"
@@ -674,7 +754,7 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
             }}
           >
             <PeopleAlt color="primary" fontSize="medium" />
-            Associated Agents
+            {t('property:details.associated_agents')}
           </Typography>
 
           <Grid container spacing={4}>
@@ -682,7 +762,7 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
               <Grid item xs={12} key={agent.id}>
                 <Card
                   sx={{
-                    borderRadius: 4,
+                    borderRadius: 1,
                     transition: 'all 0.3s ease',
                     boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                     '&:hover': {
@@ -690,30 +770,13 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
                       boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
                     },
                     height: '100%',
-                    position: 'relative', // Added for absolute positioning
+                    position: 'relative',
+                    cursor: 'pointer',
                   }}
+                  onClick={() =>
+                    router.push(Routes.Users.ReadOne.replace('{id}', agent.user.id.toString()))
+                  }
                 >
-                  {/* View Agent Button - Top Right Corner */}
-                  <Tooltip title="View Full Agent Listing">
-                    <IconButton
-                      onClick={() => console.log(`View agent ${agent.id}`)}
-                      sx={{
-                        position: 'absolute',
-                        top: 16,
-                        right: 16,
-                        backgroundColor: 'background.paper',
-                        '&:hover': {
-                          backgroundColor: 'primary.light',
-                          color: 'primary.contrastText',
-                        },
-                        zIndex: 1,
-                        boxShadow: 1,
-                      }}
-                    >
-                      <OpenInNew fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-
                   <CardContent sx={{ p: 3 }}>
                     <Box
                       sx={{
@@ -723,16 +786,15 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
                         position: 'relative',
                       }}
                     >
-                      {/* Agent Avatar with Badge */}
                       <Box sx={{ position: 'relative' }}>
-                        {agent.photo ? (
+                        {agent.user.photo ? (
                           <CardMedia
                             component="img"
-                            src={agent.photo}
+                            src={agent.user.photo.url}
                             sx={{
                               width: 120,
                               height: 120,
-                              borderRadius: 2,
+                              borderRadius: 1,
                               objectFit: 'cover',
                               border: '3px solid',
                               borderColor: 'primary.light',
@@ -777,7 +839,6 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
                       </Box>
 
                       <Box sx={{ flexGrow: 1 }}>
-                        {/* Agent Header */}
                         <Box sx={{ mb: 2 }}>
                           <Typography
                             variant="h6"
@@ -804,22 +865,9 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
                               color="primary"
                               sx={{ fontWeight: 600 }}
                             />
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 0.5,
-                              }}
-                            >
-                              <Star fontSize="small" color="warning" />
-                              <Typography variant="caption" color="text.secondary">
-                                5.0 (24 reviews)
-                              </Typography>
-                            </Box>
                           </Box>
                         </Box>
 
-                        {/* Agency Info */}
                         <Box
                           sx={{
                             display: 'flex',
@@ -828,7 +876,7 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
                             mb: 2,
                             p: 1.5,
                             backgroundColor: 'grey.50',
-                            borderRadius: 2,
+                            borderRadius: 1,
                           }}
                         >
                           <Business color="primary" fontSize="small" />
@@ -842,7 +890,6 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
                           </Box>
                         </Box>
 
-                        {/* Experience and Languages */}
                         <Box sx={{ mb: 3 }}>
                           <Typography
                             variant="caption"
@@ -850,11 +897,13 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
                             display="block"
                             mb={1}
                           >
-                            SPECIALTIES
+                            {t('property:details.specialties')}
                           </Typography>
                           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                             <Chip
-                              label={`${agent.experience}+ years experience`}
+                              label={`${agent.experience}+ ${t(
+                                'property:details.years_experience'
+                              )}`}
                               size="small"
                               color="info"
                               sx={{ fontWeight: 500 }}
@@ -874,12 +923,11 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
                           </Box>
                         </Box>
 
-                        {/* Contact Info */}
                         <Box
                           sx={{
                             p: 2,
                             backgroundColor: 'primary.lighter',
-                            borderRadius: 2,
+                            borderRadius: 1,
                             display: 'flex',
                             gap: 2,
                             flexWrap: 'wrap',
@@ -892,7 +940,7 @@ const PropertyDetails = ({ property }: PropertyDetailsProps) => {
                               display="block"
                               mb={0.5}
                             >
-                              CONTACT AGENT
+                              {t('property:details.contact_agent')}
                             </Typography>
                             <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
                               <Email fontSize="small" color="primary" />

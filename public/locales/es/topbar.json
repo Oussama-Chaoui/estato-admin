@@ -8,5 +8,14 @@
     "logout": "Cerrar sesión"
   },
   "login": "Iniciar sesión",
-  "register": "Registrarse"
+  "register": "Registrarse",
+  "notifications": "Notificaciones",
+  "unread_notification_one": "{{count}} notificación no leída",
+  "unread_notification_other": "{{count}} notificaciones no leídas",
+  "mark_all_read": "Marcar todo como leído",
+  "no_notifications_title": "Aún no hay notificaciones",
+  "no_notifications_message": "Aquí verás actualizaciones sobre solicitudes de agentes, cambios de propiedades y más.",
+  "new_badge": "Nuevo",
+  "mark_as_read": "Marcar como leído",
+  "view_all_notifications": "Ver todas las notificaciones"
 }

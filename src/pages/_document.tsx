@@ -15,7 +15,7 @@ const Document = () => {
         {/* Meta */}
         <meta name="description" content={process.env.NEXT_PUBLIC_APP_DESCRIPTION} />
         <meta name="keywords" content="react,material,next,application,dashboard,admin,template" />
-        <meta name="author" content="Estato" />
+        <meta name="author" content="Yakout" />
       </Head>
       <body className="m-0 p-0">
         <Main />

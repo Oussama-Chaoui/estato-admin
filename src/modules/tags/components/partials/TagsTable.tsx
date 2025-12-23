@@ -1,6 +1,6 @@
 import Routes from '@common/defs/routes';
 import ItemsTable, { RowAction } from '@common/components/partials/ItemsTable';
-import { CRUD_ACTION, CrudRow } from '@common/defs/types';
+import { Any, CRUD_ACTION, CrudRow } from '@common/defs/types';
 import { GridColumns, GridRenderCellParams } from '@mui/x-data-grid';
 import Namespaces from '@common/defs/namespaces';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +12,7 @@ import usePermissions from '@modules/permissions/hooks/usePermissions';
 import namespace from '@modules/tags/defs/namespace';
 import useTags, { CreateOneInput, UpdateOneInput } from '@modules/tags/hooks/api/useTags';
 import { Tag as TagType } from '@modules/tags/defs/types';
+import { getTranslatedText } from '@common/utils/translations';
 
 interface Row extends CrudRow {
   name: string;
@@ -59,7 +60,7 @@ const TagsTable = () => {
 
   const itemToRow = (item: TagType): Row => ({
     id: item.id,
-    name: item.name,
+    name: getTranslatedText(item.name as Any, '', i18n.language),
     slug: item.slug,
   });
 

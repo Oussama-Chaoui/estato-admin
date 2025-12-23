@@ -20,56 +20,56 @@ const GREY = {
 };
 
 const PRIMARY = {
-  lighter: '#F5EDE1',
-  light: '#E2D1B5',
-  main: '#C5A46D', // Softened gold
-  dark: '#A8844F',
-  darker: '#8A6A3A',
-  contrastText: GREY[900],
+  lighter: '#F0F8F7', // primary-50
+  light: '#E1F1F0', // primary-100
+  main: '#21807D', // primary-500
+  dark: '#1A6664', // primary-600
+  darker: '#134C4B', // primary-700
+  contrastText: '#FFFFFF',
 };
 
 const SECONDARY = {
-  lighter: '#F8F6F2',
-  light: '#D4CCC3',
-  main: '#6D6D6D', // Neutral warm gray
-  dark: '#4A4A4A',
-  darker: '#2E2E2E',
+  lighter: '#F5F5F5',
+  light: '#E0E0E0',
+  main: '#424242', // Strong dark gray
+  dark: '#303030',
+  darker: '#212121',
   contrastText: '#FFFFFF',
 };
 
 const INFO = {
-  lighter: '#E8F4F8',
-  light: '#9EC7D6',
-  main: '#6C9EB2', // Muted slate blue
-  dark: '#4A7383',
-  darker: '#2F4B56',
+  lighter: '#E3F2FD',
+  light: '#90CAF9',
+  main: '#2196F3', // Vibrant blue
+  dark: '#1976D2',
+  darker: '#0D47A1',
   contrastText: '#FFFFFF',
 };
 
 const SUCCESS = {
-  lighter: '#F0F5EC',
-  light: '#B8D4B1',
-  main: '#6B9E7D', // Soft sage green
-  dark: '#4C7659',
-  darker: '#32503B',
-  contrastText: GREY[900],
+  lighter: '#E8F5E8',
+  light: '#A5D6A7',
+  main: '#4CAF50', // Vibrant green
+  dark: '#388E3C',
+  darker: '#1B5E20',
+  contrastText: '#FFFFFF',
 };
 
 const WARNING = {
-  lighter: '#FDF5E8',
-  light: '#F5D7A9',
-  main: '#D4A15F', // Muted amber
-  dark: '#B58245',
-  darker: '#8F6332',
-  contrastText: GREY[900],
+  lighter: '#FFF8E1',
+  light: '#FFE082',
+  main: '#FF9800', // Vibrant orange
+  dark: '#F57C00',
+  darker: '#E65100',
+  contrastText: '#FFFFFF',
 };
 
 const ERROR = {
-  lighter: '#FBEAEA',
-  light: '#E3A6A6',
-  main: '#C46B6B', // Soft coral
-  dark: '#A24C4C',
-  darker: '#7A3636',
+  lighter: '#FFEBEE',
+  light: '#EF5350',
+  main: '#F44336', // Vibrant red
+  dark: '#D32F2F',
+  darker: '#B71C1C',
   contrastText: '#FFFFFF',
 };
 

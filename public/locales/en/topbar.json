@@ -8,5 +8,14 @@
     "logout": "Logout"
   },
   "login": "Login",
-  "register": "Register"
+  "register": "Register",
+  "notifications": "Notifications",
+  "unread_notification_one": "{{count}} unread notification",
+  "unread_notification_other": "{{count}} unread notifications",
+  "mark_all_read": "Mark all read",
+  "no_notifications_title": "No notifications yet",
+  "no_notifications_message": "You'll see updates about agent applications, property changes, and more here.",
+  "new_badge": "New",
+  "mark_as_read": "Mark as read",
+  "view_all_notifications": "View All Notifications"
 }

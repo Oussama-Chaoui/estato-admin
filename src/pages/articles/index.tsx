@@ -15,7 +15,7 @@ import PostsTable from '@modules/posts/components/partials/PostsTable';
 
 const PostsPage: NextPage = () => {
   const router = useRouter();
-  const { t } = useTranslation(['post']);
+  const { t } = useTranslation(['post', 'common']);
   return (
     <>
       <PageHeader

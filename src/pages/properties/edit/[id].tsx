@@ -46,6 +46,7 @@ export const getStaticProps = async ({ locale }: { locale: string }) => ({
       'leftbar',
       'property',
       'common',
+      'amenities',
     ])),
   },
 });

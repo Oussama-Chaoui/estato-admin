@@ -1,16 +1,116 @@
-import * as MuiIcons from '@mui/icons-material';
 import React from 'react';
 import type { SvgIconProps } from '@mui/material/SvgIcon';
+import {
+  Pool,
+  FitnessCenter,
+  LocalParking,
+  Wifi,
+  AcUnit,
+  Elevator,
+  Security,
+  EmojiNature,
+  Deck,
+  Roofing,
+  Fireplace,
+  LocalLaundryService,
+  RoomService,
+  DoorFront,
+  Pets,
+  OutdoorGrill,
+  Spa,
+  HotTub,
+  SportsTennis,
+  SportsBasketball,
+  ChildFriendly,
+  Home,
+  Warehouse,
+  DirectionsBike,
+  Whatshot,
+  LiveTv,
+  SupportAgent,
+  Weekend,
+  Kitchen,
+  KingBed,
+  MeetingRoom,
+  WbSunny,
+  Smartphone,
+  SettingsRemote,
+  WineBar,
+  MenuBook,
+  Theaters,
+  School,
+  Alarm,
+  Co2,
+  BatteryChargingFull,
+  Videocam,
+  VolumeOff,
+  Speed,
+  EvStation,
+  LocalTaxi,
+  // Feature icons
+  Bed,
+  Bathtub,
+  SquareFoot,
+  Garage,
+  Stairs,
+} from '@mui/icons-material';
 
 export const getAmenityIcon = (iconName: string, props?: SvgIconProps): JSX.Element | null => {
-  const formattedName = iconName
-    .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join('');
+  const iconMap: Record<string, React.ComponentType<SvgIconProps>> = {
+    pool: Pool,
+    'fitness-center': FitnessCenter,
+    'local-parking': LocalParking,
+    wifi: Wifi,
+    'ac-unit': AcUnit,
+    elevator: Elevator,
+    security: Security,
+    'emoji-nature': EmojiNature,
+    deck: Deck,
+    roofing: Roofing,
+    fireplace: Fireplace,
+    'local-laundry-service': LocalLaundryService,
+    'room-service': RoomService,
+    'door-front': DoorFront,
+    pets: Pets,
+    'outdoor-grill': OutdoorGrill,
+    spa: Spa,
+    'hot-tub': HotTub,
+    'sports-tennis': SportsTennis,
+    'sports-basketball': SportsBasketball,
+    'child-friendly': ChildFriendly,
+    home: Home,
+    warehouse: Warehouse,
+    'directions-bike': DirectionsBike,
+    whatshot: Whatshot,
+    'live-tv': LiveTv,
+    'support-agent': SupportAgent,
+    weekend: Weekend,
+    kitchen: Kitchen,
+    'king-bed': KingBed,
+    'meeting-room': MeetingRoom,
+    'wb-sunny': WbSunny,
+    smartphone: Smartphone,
+    'settings-remote': SettingsRemote,
+    'wine-bar': WineBar,
+    'menu-book': MenuBook,
+    theaters: Theaters,
+    school: School,
+    alarm: Alarm,
+    co2: Co2,
+    'battery-charging-full': BatteryChargingFull,
+    videocam: Videocam,
+    'volume-off': VolumeOff,
+    speed: Speed,
+    'ev-station': EvStation,
+    'local-taxi': LocalTaxi,
+    // Feature icons
+    bed: Bed,
+    bathtub: Bathtub,
+    'square-foot': SquareFoot,
+    garage: Garage,
+    stairs: Stairs,
+  };
 
-  const IconComponent: React.ElementType = (MuiIcons as Record<string, React.ElementType>)[
-    formattedName
-  ];
-
-  return IconComponent ? <IconComponent {...props} /> : null;
+  const IconComponent = iconMap[iconName];
+  return IconComponent ? <IconComponent {...props} /> : <Home {...props} />;
 };

@@ -7,6 +7,7 @@ const ApiRoutes: CrudApiRoutes = {
   ReadOne: prefix + '/{id}',
   UpdateOne: prefix + '/{id}',
   DeleteOne: prefix + '/{id}',
+  ReadAllCitiesWithRegions: prefix + '/cities',
 };
 
 export default ApiRoutes;

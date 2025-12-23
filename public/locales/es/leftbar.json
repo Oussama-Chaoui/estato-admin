@@ -2,5 +2,16 @@
   "logout": "Cerrar sesión",
   "management": "Gestión",
   "dashboard": "Tablero",
-  "login": "Iniciar sesión"
+  "login": "Iniciar sesión",
+  "settings": "Configuración",
+  "create": "Crear",
+  "user_default": "Usuario",
+  "my_profile": "Mi Perfil",
+  "menu": {
+    "dashboard": "Tablero",
+    "users": "Usuarios",
+    "properties": "Propiedades",
+    "posts": "Publicaciones",
+    "agent_applications": "Solicitudes de Agentes"
+  }
 }

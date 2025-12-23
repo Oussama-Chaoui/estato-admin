@@ -1,4 +1,10 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import { useTranslation } from 'react-i18next';
+import { Box, CircularProgress, Paper, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+
+import { Id } from '@common/defs/types';
 import FormStepper, {
   FormStep,
   FormStepProps,
@@ -6,24 +12,18 @@ import FormStepper, {
   StepComponent,
 } from '@common/components/lib/navigation/FormStepper';
 import Routes from '@common/defs/routes';
-import { useRouter } from 'next/router';
-import { useTranslation } from 'react-i18next';
 import useProperties, {
   CreateOneInput,
   UpdateOneInput,
 } from '@modules/properties/hooks/api/useProperties';
 import { Property } from '@modules/properties/defs/types';
 import StepGeneralDetails from '@modules/properties/components/partials/upsert-property-steps/StepGeneralDetails';
-import { Id } from '@common/defs/types';
 import StepLocationAgents from './upsert-property-steps/StepLocationAgents';
-import StepFeaturesAmenities from './upsert-property-steps/StepFeaturesAmenities';
 import StepImages from './upsert-property-steps/StepImages';
-import { Box, CircularProgress, Paper, Typography, useTheme } from '@mui/material';
 
 export enum CREATE_PROPERTY_STEP_ID {
   GENERAL = 'general',
   LOCATION_AGENTS = 'location-agents',
-  FEATURES_AMENITIES = 'features-amenities',
   IMAGES = 'images',
 }
 
@@ -31,51 +31,54 @@ interface UpsertPropertyStepperProps {
   itemId?: Id;
 }
 
-const mapPropertyToInput = (property: Property): CreateOneInput => ({
-  title: property.title,
-  description: property.description,
-  monthlyPrice: property.monthlyPrice,
-  dailyPrice: property.dailyPrice,
-  salePrice: property.salePrice,
-  currency: property.currency,
-  dailyPriceEnabled: property.dailyPriceEnabled,
-  monthlyPriceEnabled: property.monthlyPriceEnabled,
-  type: property.type,
-  status: property.status,
-  streetAddress: property.streetAddress,
-  yearBuilt: property.yearBuilt,
-  lotSize: property.lotSize,
-  hasVR: property.hasVR,
-  locationId: property.location.id,
-  agentIds: property.agents.map((a) => a.id),
-  amenityIds: property.amenities.map((a) => a.id),
-  images: property.images.map((img) => ({
-    imageId: img.imageId,
-    caption: img.caption ?? '',
-    ordering: img.ordering,
-    preview: img.upload.url,
-  })),
-  features: {
-    id: property.features[0]?.id ?? 0,
-    bedrooms: property.features[0]?.bedrooms ?? 0,
-    bathrooms: property.features[0]?.bathrooms ?? 0,
-    area: property.features[0]?.area ?? 0,
-    garages: property.features[0]?.garages ?? 0,
-    floors: property.features[0]?.floors ?? 0,
-    pool: Boolean(property.features[0]?.pool),
-    garden: Boolean(property.features[0]?.garden),
-  },
-  location: {
-    id: property.location.id,
-    region: property.location.region,
-    city: property.location.city,
-    latitude: property.location.latitude,
-    longitude: property.location.longitude,
-  },
-});
+const mapPropertyToInput = (property: Property): CreateOneInput => {
+  // Extract feature data from the first feature object (since it's a hasMany relationship but should be one-to-one)
+  const featureData = property.features?.[0] || {};
+
+  return {
+    title: property.title,
+    description: property.description,
+    monthlyPrice: property.monthlyPrice,
+    dailyPrice: property.dailyPrice,
+    salePrice: property.salePrice,
+    currency: property.currency,
+    dailyPriceEnabled: property.dailyPriceEnabled,
+    monthlyPriceEnabled: property.monthlyPriceEnabled,
+    type: property.type,
+    yearBuilt: property.yearBuilt,
+    hasVR: property.hasVR,
+    featured: property.featured,
+    furnishingStatus: property.furnishingStatus,
+    locationId: property.location?.id,
+    agentIds: property.agents.map((a) => a.id),
+    amenityIds: property.amenities.map((a) => a.id),
+    images: property.images.map((img) => ({
+      imageId: img.imageId,
+      caption: img.caption ?? '',
+      ordering: img.ordering,
+      preview: img.upload.url,
+    })),
+    // Keep features nested (matching backend structure)
+    features: {
+      bedrooms: featureData.bedrooms ?? 0,
+      bathrooms: featureData.bathrooms ?? 0,
+      area: featureData.area ?? 0,
+      garages: featureData.garages ?? 0,
+      floors: featureData.floors ?? 0,
+    },
+    location: property.location
+      ? {
+          cityId: property.location.cityId || property.location.city?.id || 0,
+          streetAddress: property.location.streetAddress,
+          latitude: property.location.latitude || 0,
+          longitude: property.location.longitude || 0,
+        }
+      : undefined,
+  };
+};
 
 const UpsertPropertyStepper = ({ itemId }: UpsertPropertyStepperProps) => {
-  const { t } = useTranslation(['property']);
+  const { t } = useTranslation(['property', 'common', 'amenities']);
   const router = useRouter();
   const theme = useTheme();
 
@@ -107,11 +110,6 @@ const UpsertPropertyStepper = ({ itemId }: UpsertPropertyStepperProps) => {
       id: CREATE_PROPERTY_STEP_ID.IMAGES,
       label: t('property:form.images'),
       component: StepImages as unknown as StepComponent<FormStepRef, FormStepProps>,
-    },
-    {
-      id: CREATE_PROPERTY_STEP_ID.FEATURES_AMENITIES,
-      label: t('property:form.features_amenities'),
-      component: StepFeaturesAmenities as unknown as StepComponent<FormStepRef, FormStepProps>,
     },
     {
       id: CREATE_PROPERTY_STEP_ID.LOCATION_AGENTS,

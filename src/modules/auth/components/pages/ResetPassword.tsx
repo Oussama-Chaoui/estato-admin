@@ -11,6 +11,9 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import Routes from '@common/defs/routes';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
+import { useSnackbar } from 'notistack';
 
 interface ResetPasswordProps {
   token: string;
@@ -19,6 +22,12 @@ type ResetPasswordInputForm = Omit<ResetPasswordInput, 'token'>;
 const ResetPassword = (props: ResetPasswordProps) => {
   const { resetPassword } = useAuth();
   const { t } = useTranslation(['auth', 'common']);
+  const router = useRouter();
+  const { enqueueSnackbar } = useSnackbar();
+
+  const encodedEmail = router.query.e as string;
+  const emailFromUrl = encodedEmail ? atob(encodedEmail) : '';
+
   const ResetPasswordSchema = Yup.object().shape({
     email: Yup.string()
       .email(t('common:email_format_incorrect'))
@@ -29,29 +38,41 @@ const ResetPassword = (props: ResetPasswordProps) => {
       .required(t('common:field_required'))
       .oneOf([Yup.ref('password')], t('auth:passwords_not_match')),
   });
+
   const methods = useForm<ResetPasswordInputForm>({
     resolver: yupResolver(ResetPasswordSchema),
     defaultValues: {
-      email: '',
+      email: emailFromUrl || '',
       password: '',
       passwordConfirmation: '',
     },
   });
+
+  useEffect(() => {
+    if (emailFromUrl) {
+      methods.setValue('email', emailFromUrl);
+    }
+  }, [emailFromUrl, methods]);
 
   const {
     handleSubmit,
     formState: { isSubmitting },
   } = methods;
   const onSubmit = async (data: ResetPasswordInputForm) => {
-    await resetPassword(
+    const response = await resetPassword(
       {
         email: data.email,
         password: data.password,
         passwordConfirmation: data.passwordConfirmation,
         token: props.token,
       },
-      { displayProgress: true, displaySuccess: true }
+      { displayProgress: true, displaySuccess: false }
     );
+
+    if (response.success) {
+      enqueueSnackbar(t('auth:password_reset_success'), { variant: 'success' });
+      router.push(Routes.Auth.Login);
+    }
   };
   return (
     <>
@@ -71,7 +92,12 @@ const ResetPassword = (props: ResetPasswordProps) => {
         <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={4} sx={{ padding: 5 }}>
             <Grid item xs={12}>
-              <RHFTextField name="email" label={t('common:email')} />
+              <RHFTextField
+                name="email"
+                label={t('common:email')}
+                disabled={!!emailFromUrl}
+                helperText={emailFromUrl ? t('auth:email_prefilled_from_link') : undefined}
+              />
             </Grid>
             <Grid item xs={12}>
               <RHFTextField name="password" label={t('common:password')} type="password" />

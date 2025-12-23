@@ -10,6 +10,7 @@ import Labels from '@common/defs/labels';
 import { useTranslation } from 'react-i18next';
 import UpsertPostFormWithPreview from '@modules/posts/components/partials/UpsertPostFormWithPreview';
 import { useRouter } from 'next/router';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 const PostsPage: NextPage = () => {
   const { t } = useTranslation(['post', 'common']);
@@ -29,6 +30,24 @@ const PostsPage: NextPage = () => {
     </>
   );
 };
+
+export const getStaticPaths = () => {
+  return { paths: [], fallback: 'blocking' };
+};
+
+export const getStaticProps = async ({ locale }: { locale: string }) => ({
+  props: {
+    ...(await serverSideTranslations(locale, [
+      'topbar',
+      'footer',
+      'leftbar',
+      'post',
+      'common',
+      'categories',
+      'tags',
+    ])),
+  },
+});
 
 export default withAuth(
   withPermissions(PostsPage, {

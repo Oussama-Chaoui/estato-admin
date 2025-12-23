@@ -4,15 +4,153 @@
     "edit_one": "Éditer l'utilisateur",
     "items": "Utilisateurs",
     "new_one": "Nouvel utilisateur",
-    "read_all": "Liste des utilisateurs"
+    "read_all": "Liste des utilisateurs",
+    "read_one": "Détails de l'utilisateur"
   },
   "form": {
-    "step1_label": "Informations de connexion",
-    "step2_label": "Rôle"
+    "step1_label": "Sélectionner le rôle",
+    "step2_label": "Informations utilisateur"
   },
   "list": {
     "created_at": "Date d'inscription",
     "email": "Email",
-    "role": "Admin"
+    "role": "Admin",
+    "roles": "Rôles",
+    "user_info": "Utilisateur",
+    "no_name": "Aucun nom"
+  },
+  "stepper": {
+    "loading_user_details": "Chargement des détails de l'utilisateur...",
+    "loading_description": "Veuillez patienter pendant que nous récupérons les informations de l'utilisateur."
+  },
+  "step1": {
+    "title": "Sélectionner le rôle utilisateur",
+    "description": "Choisissez le(s) rôle(s) pour cet utilisateur. Vous pouvez combiner Admin avec Agent.",
+    "roles": {
+      "admin": {
+        "title": "Administrateur",
+        "description": "Accès complet au système et capacités de gestion"
+      },
+      "agent": {
+        "title": "Agent immobilier",
+        "description": "Gestion de propriétés et interaction avec les clients"
+      },
+      "client": {
+        "title": "Client",
+        "description": "Navigation de propriétés et services de location"
+      }
+    },
+    "alerts": {
+      "admin_agent_combination": "Parfait ! La combinaison Admin + Agent donne un accès complet au système plus les capacités de gestion de propriétés.",
+      "admin_only_tip": "Ajoutez le rôle Agent si vous voulez que cet admin apparaisse dans les listes d'agents pour les clients.",
+      "agent_only_tip": "Considérez ajouter le rôle Admin si cet utilisateur a besoin d'un accès de gestion système.",
+      "client_account": "Compte Client : Cet utilisateur aura seulement accès à naviguer les propriétés et faire des demandes de location."
+    },
+    "validation": {
+      "at_least_one_role_required": "Au moins un rôle doit être sélectionné"
+    }
+  },
+  "step2": {
+    "title": "Informations utilisateur",
+    "description": "Complétez les détails de l'utilisateur et les informations spécifiques au rôle",
+    "sections": {
+      "basic_info": "Informations de base",
+      "agent_info": "Informations agent",
+      "client_info": "Informations client"
+    },
+    "fields": {
+      "full_name": "Nom complet",
+      "email_address": "Adresse e-mail",
+      "phone_number": "Numéro de téléphone",
+      "password": "Mot de passe",
+      "password_placeholder_edit": "Laisser vide pour garder le mot de passe actuel",
+      "password_placeholder_new": "Entrez le mot de passe",
+      "license_number": "Numéro de licence",
+      "experience_years": "Expérience (années)",
+      "agency_name": "Nom de l'agence",
+      "agency_address": "Adresse de l'agence",
+      "bio": "Biographie",
+      "bio_placeholder": "Parlez-nous de votre expérience et expertise...",
+      "nic_number": "Numéro NIC",
+      "nic_placeholder": "ex., 1234567890123",
+      "passport_number": "Numéro de passeport",
+      "passport_placeholder": "ex., A12345678"
+    },
+    "validation": {
+      "name_required": "Le nom est requis",
+      "email_required": "L'e-mail est requis",
+      "email_invalid": "Format d'e-mail invalide",
+      "phone_required": "Le numéro de téléphone est requis",
+      "password_required": "Le mot de passe est requis",
+      "license_required": "Le numéro de licence est requis",
+      "experience_required": "L'expérience est requise",
+      "experience_min": "L'expérience doit être 0 ou plus",
+      "agency_name_required": "Le nom de l'agence est requis",
+      "agency_address_required": "L'adresse de l'agence est requise",
+      "client_identifier_required": "Le numéro NIC ou passeport est requis"
+    },
+    "client_description": "Veuillez fournir soit un numéro NIC soit un numéro de passeport pour l'identification."
+  },
+  "actions": {
+    "details": "Détails",
+    "edit": "Éditer",
+    "delete": "Supprimer"
+  },
+  "roles": {
+    "admin": "Admin",
+    "agent": "Agent",
+    "client": "Client"
+  },
+  "details": {
+    "contact_info": "Informations de contact",
+    "system_info": "Informations système",
+    "agent_info": "Informations agent",
+    "client_info": "Informations client",
+    "properties_portfolio": "Portefeuille de propriétés",
+    "about": "À propos",
+    "not_provided": "Non fourni",
+    "member_since": "Membre depuis",
+    "last_updated": "Dernière mise à jour",
+    "email_address": "Adresse e-mail",
+    "phone_number": "Numéro de téléphone",
+    "license_number": "Numéro de licence",
+    "experience": "Expérience",
+    "years": "années",
+    "agency_name": "Nom de l'agence",
+    "agency_address": "Adresse de l'agence",
+    "nic_number": "Numéro NIC",
+    "passport": "Passeport",
+    "loading_properties": "Chargement des propriétés...",
+    "no_properties_found": "Aucune propriété trouvée",
+    "no_properties_message": "Cet agent n'a encore aucune propriété assignée.",
+    "sale_price": "Prix de vente",
+    "monthly_rent": "Loyer mensuel",
+    "daily_rate": "Tarif journalier",
+    "price_not_available": "Prix non disponible",
+    "location_not_specified": "Localisation non spécifiée",
+    "untitled_property": "Propriété sans titre"
+  },
+  "profile": {
+    "title": "Mon Profil",
+    "contact": "Contact",
+    "personal_info": "Informations personnelles",
+    "professional_info": "Informations professionnelles",
+    "statistics": "Statistiques",
+    "admin_privileges": "Privilèges administrateur",
+    "system_access": "Accès complet au système",
+    "system_access_description": "En tant qu'administrateur, vous avez accès à toutes les fonctionnalités du système, y compris la gestion des utilisateurs, des propriétés et des paramètres système.",
+    "not_provided": "Non renseigné",
+    "edit_email": "Modifier l'email",
+    "edit_phone": "Modifier le téléphone",
+    "edit_password": "Modifier le mot de passe",
+    "edit_license": "Modifier le numéro de licence",
+    "edit_experience": "Modifier l'expérience",
+    "edit_bio": "Modifier la biographie",
+    "edit_agency_name": "Modifier le nom de l'agence",
+    "edit_agency_address": "Modifier l'adresse de l'agence",
+    "new_password": "Nouveau mot de passe",
+    "confirm_password": "Confirmer le mot de passe",
+    "password_placeholder": "Nouveau mot de passe",
+    "confirm_password_placeholder": "Confirmez votre nouveau mot de passe"
   }
 }

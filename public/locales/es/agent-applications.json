@@ -1,0 +1,25 @@
+{
+  "common": {
+    "create_new_one": "Crear una nueva solicitud de agente",
+    "edit_one": "Editar la solicitud de agente",
+    "items": "Solicitudes de Agentes",
+    "new_one": "Nueva solicitud de agente",
+    "read_all": "Lista de Solicitudes de Agentes",
+    "read_one": "Detalles de la Solicitud de Agente"
+  },
+  "table": {
+    "applicant": "Solicitante",
+    "applied": "Aplicado",
+    "no_email": "Sin correo"
+  },
+  "actions": {
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "mark_as_pending": "Marcar como Pendiente"
+  },
+  "status": {
+    "pending": "Pendiente",
+    "approved": "Aprobado",
+    "rejected": "Rechazado"
+  }
+}

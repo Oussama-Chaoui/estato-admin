@@ -52,6 +52,29 @@
   "primary_phone": "Teléfono principal",
   "fax": "Fax",
   "passwords_not_match": "La confirmación de la contraseña no coincide",
+  "months": {
+    "january": "Enero",
+    "february": "Febrero",
+    "march": "Marzo",
+    "april": "Abril",
+    "may": "Mayo",
+    "june": "Junio",
+    "july": "Julio",
+    "august": "Agosto",
+    "september": "Septiembre",
+    "october": "Octubre",
+    "november": "Noviembre",
+    "december": "Diciembre"
+  },
+  "days": {
+    "sunday": "Dom",
+    "monday": "Lun",
+    "tuesday": "Mar",
+    "wednesday": "Mié",
+    "thursday": "Jue",
+    "friday": "Vie",
+    "saturday": "Sáb"
+  },
   "update_details": "Actualizar los detalles",
   "enable": "Activar",
   "disable": "Desactivar",
@@ -76,5 +99,14 @@
     "french": "Francés",
     "english": "Inglés",
     "spanish": "Español"
+  },
+  "area_unit": "m²",
+  "table_actions": {
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "delete_confirm_title": "Eliminar",
+    "delete_confirm_message": "¿Está seguro de que desea eliminar este elemento? Esta acción es irreversible.",
+    "delete_confirm_yes": "Sí, eliminar",
+    "delete_confirm_no": "No, cancelar"
   }
 }

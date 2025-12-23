@@ -1,0 +1,63 @@
+{
+  "common": {
+    "create_new_one": "Créer un nouvel article",
+    "new_one": "Nouvel article",
+    "read_all": "Liste des articles",
+    "read_one": "Détails de l'article",
+    "items": "Articles",
+    "edit_one": "Éditer l'article"
+  },
+  "list": {
+    "title": "Titre",
+    "status": "Statut",
+    "publishedAt": "Publié le",
+    "categories": "Catégories",
+    "tags": "Étiquettes",
+    "unpublished": "Non publié"
+  },
+  "status": {
+    "draft": "Brouillon",
+    "published": "Publié",
+    "archived": "Archivé"
+  },
+  "actions": {
+    "publish": "Publier",
+    "archive": "Archiver"
+  },
+  "form": {
+    "loading_post_data": "Chargement des données de l'article...",
+    "post_title": "Titre de l'article",
+    "post_content": "Contenu de l'article",
+    "post_excerpt": "Extrait de l'article",
+    "meta_title": "Titre méta",
+    "meta_description": "Description méta",
+    "slug_label": "Slug (version URL du titre) *",
+    "categories_label": "Catégories *",
+    "tags_label": "Étiquettes *",
+    "french": "Français",
+    "arabic": "Arabe",
+    "english": "Anglais",
+    "spanish": "Espagnol",
+    "french_content": "Contenu français *",
+    "arabic_content": "Contenu arabe *",
+    "english_content": "Contenu anglais",
+    "spanish_content": "Contenu espagnol",
+    "save_changes": "Sauvegarder les modifications",
+    "create_post": "Créer l'article"
+  },
+  "validation": {
+    "french_title_required": "Le titre français est requis",
+    "arabic_title_required": "Le titre arabe est requis",
+    "french_content_required": "Le contenu français est requis",
+    "arabic_content_required": "Le contenu arabe est requis",
+    "content_required": "Le contenu est requis",
+    "featured_image_required": "L'image mise en avant est requise",
+    "select_category": "Sélectionnez au moins une catégorie",
+    "select_tag": "Sélectionnez au moins une étiquette",
+    "title_max_length": "Le titre doit contenir au maximum 255 caractères",
+    "meta_title_max_length": "Le titre méta doit contenir au maximum 255 caractères",
+    "meta_description_max_length": "La description méta doit contenir au maximum 500 caractères",
+    "slug_required": "Le slug est requis",
+    "slug_max_length": "Longueur maximale de 255 caractères"
+  }
+}

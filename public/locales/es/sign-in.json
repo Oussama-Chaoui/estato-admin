@@ -2,5 +2,8 @@
   "forgot_password_link_text": "Haga clic aquí",
   "forgot_password_text": "¿Olvidó su contraseña?",
   "title": "Iniciar sesión",
-  "validate": "Validar"
+  "validate": "Validar",
+  "welcome_back": "Bienvenido de nuevo",
+  "sign_in_to_continue": "Inicia sesión para continuar",
+  "sign_in": "Iniciar sesión"
 }

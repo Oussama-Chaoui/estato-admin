@@ -6,20 +6,21 @@ import { Upload } from '@modules/uploads/defs/types';
 
 export interface User extends CrudObject {
   name: string;
-  phone: string;
-  email: string;
+  phone: string | null;
+  email: string | null;
+  photoId: Id | null;
+  photo: Upload | null;
   rolesNames: ROLE[];
   permissionsNames: string[];
   agent: Agent | null;
+  client: Client | null;
 }
 
 export interface Client extends CrudObject {
-  nicNumber: string;
+  nicNumber: string | null;
   passport: string | null;
   userId: Id;
   user: User;
-  imageId?: Id;
-  image: Upload;
 }
 
 export type Language = {

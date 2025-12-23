@@ -1,0 +1,19 @@
+{
+  "page_title": "Notificaciones",
+  "new_badge": "Nuevo",
+  "mark_as_read": "Marcar como leído",
+  "mark_all_read": "Marcar todo como leído",
+  "delete": "Eliminar",
+  "loading": "Cargando...",
+  "load_more": "Cargar más",
+  "no_notifications_title": "Aún no hay notificaciones",
+  "no_notifications_message": "Aquí verás actualizaciones sobre solicitudes de agentes, cambios de propiedades y más.",
+  "mark_all_read_success": "Todas las notificaciones marcadas como leídas",
+  "mark_all_read_error": "Error al marcar todas como leídas",
+  "delete_notification_success": "Notificación eliminada",
+  "delete_notification_error": "Error al eliminar la notificación",
+  "total_notification_one": "{{count}} notificación en total",
+  "total_notification_other": "{{count}} notificaciones en total",
+  "unread": "no leídas"
+}
+

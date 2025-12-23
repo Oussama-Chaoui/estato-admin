@@ -1,0 +1,25 @@
+{
+  "common": {
+    "create_new_one": "Create a new agent application",
+    "edit_one": "Edit the agent application",
+    "items": "Agent Applications",
+    "new_one": "New agent application",
+    "read_all": "Agent Applications List",
+    "read_one": "Agent Application Details"
+  },
+  "table": {
+    "applicant": "Applicant",
+    "applied": "Applied",
+    "no_email": "No email"
+  },
+  "actions": {
+    "approve": "Approve",
+    "reject": "Reject",
+    "mark_as_pending": "Mark as Pending"
+  },
+  "status": {
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected"
+  }
+}

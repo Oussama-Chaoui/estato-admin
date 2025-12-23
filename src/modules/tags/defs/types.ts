@@ -1,6 +1,11 @@
 import { CrudObject } from '@common/defs/types';
 
 export interface Tag extends CrudObject {
-  name: string;
+  name: {
+    en?: string;
+    fr: string;
+    es?: string;
+    ar: string;
+  };
   slug: string;
 }

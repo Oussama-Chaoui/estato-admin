@@ -23,7 +23,7 @@ interface SavedReadAllParams {
   page?: number;
   pageSize?: number | 'all';
   columnsSort?: SortParam;
-  filter?: FilterParam;
+  filters?: FilterParam[];
 }
 
 export type ItemsData<Item> = { items: Item[]; meta: PaginationMeta };
@@ -80,7 +80,7 @@ const useItems = <Item, CreateOneInput, UpdateOneInput>(
     page: 1,
     pageSize: opts.pageSize,
     columnsSort: undefined,
-    filter: undefined,
+    filters: undefined,
   });
   const { data, mutate } = useSWRImmutable<Item[] | null>(
     shouldRefetch ? apiRoutes.ReadAll : null,
@@ -92,7 +92,7 @@ const useItems = <Item, CreateOneInput, UpdateOneInput>(
         savedReadAllParams?.page,
         savedReadAllParams?.pageSize,
         savedReadAllParams?.columnsSort,
-        savedReadAllParams && savedReadAllParams.filter ? [savedReadAllParams?.filter] : []
+        savedReadAllParams?.filters
       );
       return response.data?.items ?? null;
     }
@@ -158,21 +158,25 @@ const useItems = <Item, CreateOneInput, UpdateOneInput>(
     const queryParams = new URLSearchParams(paginationOptions).toString();
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore: ignoring uncorrect params type mismatch
-    const filterParam = filters
-      ?.filter((filter) => filter !== undefined && filter !== null)
-      .map((filter) => encodeURIComponent(JSON.stringify(filter)))
-      .join('&filters[]=');
+    // Build unified filter object expected by API's DataTableParams
+    let filterParam = '';
+    if (filters && filters.length > 0) {
+      const filterObject = {
+        items: filters.map((f) => ({
+          columnField: f.filterColumn,
+          operatorValue: f.filterOperator,
+          value: f.filterValue,
+        })),
+      } as Any;
+      filterParam = `&filter=${encodeURIComponent(JSON.stringify(filterObject))}`;
+    }
 
     const sortParams = columnsSort
       ? `&order[column]=${columnsSort.column}&order[dir]=${columnsSort.dir}`
       : '';
 
     const response = await fetchApi<ItemsData<Item>>(
-      `${apiRoutes.ReadAll}?${queryParams}${sortParams}${
-        filterParam !== undefined && filterParam !== null && filterParam !== ''
-          ? '&filters[]=' + filterParam
-          : ''
-      }`,
+      `${apiRoutes.ReadAll}?${queryParams}${sortParams}${filterParam}`,
       options
     );
     if (response.success) {

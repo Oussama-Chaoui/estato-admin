@@ -2,5 +2,16 @@
   "login": "Connexion",
   "logout": "Déconnexion",
   "management": "Gestion",
-  "dashboard": "Tableau de bord"
+  "dashboard": "Tableau de bord",
+  "settings": "Paramètres",
+  "create": "Créer",
+  "user_default": "Utilisateur",
+  "my_profile": "Mon Profil",
+  "menu": {
+    "dashboard": "Tableau de bord",
+    "users": "Utilisateurs",
+    "properties": "Propriétés",
+    "posts": "Articles",
+    "agent_applications": "Candidatures d'Agents"
+  }
 }

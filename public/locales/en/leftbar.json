@@ -2,5 +2,16 @@
   "logout": "Logout",
   "login": "Login",
   "management": "Management",
-  "dashboard": "Dashboard"
+  "dashboard": "Dashboard",
+  "settings": "Settings",
+  "create": "Create",
+  "user_default": "User",
+  "my_profile": "My Profile",
+  "menu": {
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "properties": "Properties",
+    "posts": "Posts",
+    "agent_applications": "Agent Applications"
+  }
 }

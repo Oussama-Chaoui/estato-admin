@@ -41,11 +41,16 @@ interface AuthData {
     _input: RequestPasswordResetInput,
     _options?: FetchApiOptions
   ) => Promise<ApiResponse<null>>;
+  getPasswordResetInfo: (
+    _token: string,
+    _options?: FetchApiOptions
+  ) => Promise<ApiResponse<{ email: string }>>;
   resetPassword: (
     _input: ResetPasswordInput,
     _options?: FetchApiOptions
   ) => Promise<ApiResponse<{ token: string }>>;
   initialized: boolean; // This is used to prevent the app from rendering before the useAuth initial fetch is complete
+  mutate: () => Promise<User | null | undefined>; // Expose mutate function to refresh user data
 }
 
 const useAuth = (): AuthData => {
@@ -58,7 +63,9 @@ const useAuth = (): AuthData => {
       register: async () => ({ success: false, errors: ['Auth is disabled'] }),
       logout: async () => ({ success: false, errors: ['Auth is disabled'] }),
       requestPasswordReset: async () => ({ success: false, errors: ['Auth is disabled'] }),
+      getPasswordResetInfo: async () => ({ success: false, errors: ['Auth is disabled'] }),
       resetPassword: async () => ({ success: false, errors: ['Auth is disabled'] }),
+      mutate: async () => null,
     };
   }
 
@@ -66,7 +73,7 @@ const useAuth = (): AuthData => {
 
   const fetchApi = useApi();
 
-  const { data: user, mutate } = useSWR<User | null>(ApiRoutes.Auth.Me, async (url) => {
+  const { data: user, mutate } = useSWR<User | null>(ApiRoutes.Auth.Me, async (url: string) => {
     if (!localStorage.getItem('authToken')) {
       setInitialized(true);
       return null;
@@ -132,6 +139,14 @@ const useAuth = (): AuthData => {
     return response;
   };
 
+  const getPasswordResetInfo = async (token: string, options?: FetchApiOptions) => {
+    const response = await fetchApi<{ email: string }>(ApiRoutes.Auth.GetPasswordResetInfo, {
+      data: { token },
+      ...options,
+    });
+    return response;
+  };
+
   const resetPassword = async (input: ResetPasswordInput, options?: FetchApiOptions) => {
     const response = await fetchApi<{ token: string }>(ApiRoutes.Auth.ResetPassword, {
       data: input,
@@ -146,8 +161,10 @@ const useAuth = (): AuthData => {
     register,
     logout,
     requestPasswordReset,
+    getPasswordResetInfo,
     resetPassword,
     initialized,
+    mutate,
   };
 };
 

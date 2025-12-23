@@ -1,0 +1,19 @@
+{
+  "page_title": "Notifications",
+  "new_badge": "New",
+  "mark_as_read": "Mark as read",
+  "mark_all_read": "Mark all read",
+  "delete": "Delete",
+  "loading": "Loading...",
+  "load_more": "Load More",
+  "no_notifications_title": "No notifications yet",
+  "no_notifications_message": "You'll see updates about agent applications, property changes, and more here.",
+  "mark_all_read_success": "All notifications marked as read",
+  "mark_all_read_error": "Failed to mark all as read",
+  "delete_notification_success": "Notification deleted",
+  "delete_notification_error": "Failed to delete notification",
+  "total_notification_one": "{{count}} total notification",
+  "total_notification_other": "{{count}} total notifications",
+  "unread": "unread"
+}
+

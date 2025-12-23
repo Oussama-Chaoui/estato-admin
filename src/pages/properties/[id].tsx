@@ -12,6 +12,7 @@ import Namespaces from '@common/defs/namespaces';
 import Labels from '@common/defs/labels';
 import { useTranslation } from 'react-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { getTranslatedText } from '@common/utils/translations';
 import useProperties from '@modules/properties/hooks/api/useProperties';
 import { Property } from '@modules/properties/defs/types';
 import PropertyDetails from '@modules/properties/components/partials/PropertyDetails';
@@ -23,7 +24,7 @@ const PropertiesPage: NextPage = () => {
   const [loaded, setLoaded] = useState(false);
   const [item, setItem] = useState<null | Property>(null);
   const id: Id = Number(router.query.id);
-  const { t } = useTranslation(['property', 'common']);
+  const { t, i18n } = useTranslation(['property', 'common']);
 
   useEffect(() => {
     if (loaded) {
@@ -57,7 +58,11 @@ const PropertiesPage: NextPage = () => {
         links={[
           { name: t('common:dashboard'), href: Routes.Common.Home },
           { name: t(`property:${Labels.Properties.Items}`), href: Routes.Properties.ReadAll },
-          { name: item ? item.title : t(`property:${Labels.Properties.ReadOne}`) },
+          {
+            name: item
+              ? getTranslatedText(item.title, i18n.language, t('property:details.untitled'))
+              : t(`property:${Labels.Properties.ReadOne}`),
+          },
         ]}
       />
       {item && <PropertyDetails property={item} />}
@@ -77,6 +82,7 @@ export const getStaticProps = async ({ locale }: { locale: string }) => ({
       'leftbar',
       'property',
       'common',
+      'amenities',
     ])),
   },
 });

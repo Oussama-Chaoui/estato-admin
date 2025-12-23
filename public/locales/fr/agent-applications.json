@@ -1,0 +1,25 @@
+{
+  "common": {
+    "create_new_one": "Créer une nouvelle candidature d'agent",
+    "edit_one": "Éditer la candidature d'agent",
+    "items": "Candidatures d'Agents",
+    "new_one": "Nouvelle candidature d'agent",
+    "read_all": "Liste des Candidatures d'Agents",
+    "read_one": "Détails de la Candidature d'Agent"
+  },
+  "table": {
+    "applicant": "Candidat",
+    "applied": "Postulé",
+    "no_email": "Aucun email"
+  },
+  "actions": {
+    "approve": "Approuver",
+    "reject": "Rejeter",
+    "mark_as_pending": "Marquer comme En Attente"
+  },
+  "status": {
+    "pending": "En Attente",
+    "approved": "Approuvé",
+    "rejected": "Rejeté"
+  }
+}

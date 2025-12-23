@@ -88,6 +88,13 @@ const FormStepper = <FormData extends AnyObject, FORM_STEP_ID>({
     reset,
   } = useStepper<FormData, FORM_STEP_ID>(id);
 
+  // Clear localStorage when in edit mode to ensure initialData is the source of truth
+  useEffect(() => {
+    if (initialData) {
+      clearDraft(id);
+    }
+  }, [initialData, id]);
+
   useEffect(() => {
     const allData = getAllData();
     if (loaded && initialData && (!allData || Object.keys(allData).length === 0)) {
@@ -132,10 +139,20 @@ const FormStepper = <FormData extends AnyObject, FORM_STEP_ID>({
       setActiveStepId(nextStepId);
       setLastVisitedStepId(nextStepId);
     } else {
-      const allData = getAllData();
+      let allData;
+      if (isEditMode) {
+        // In edit mode, combine initial data with current step data and saved step data
+        allData = {
+          ...mergedStepData,
+          ...(data || {}), // Include current step's data if available
+        };
+      } else {
+        allData = getAllData();
+      }
+
       if (allData) {
         setIsSubmitting(true);
-        onSubmit(allData).then((success) => {
+        onSubmit(allData as FormData).then((success) => {
           if (success) {
             reset();
             clearDraft(id);
@@ -176,13 +193,13 @@ const FormStepper = <FormData extends AnyObject, FORM_STEP_ID>({
   };
 
   return (
-    <Stack sx={sx} gap={4} flexDirection={vertical ? 'row' : 'column'}>
+    <Stack sx={sx} gap={4} p={2} flexDirection={vertical ? 'row' : 'column'} width="100%">
       <Stepper
         nonLinear
         alternativeLabel={!vertical}
         activeStep={steps.findIndex((s) => s.id === activeStepId)}
         orientation={vertical ? 'vertical' : 'horizontal'}
-        sx={{ height: 'fit-content' }}
+        sx={{ height: 'fit-content', width: '100%', overflow: 'hidden' }}
       >
         {steps.map((step) => (
           <Step
@@ -203,7 +220,7 @@ const FormStepper = <FormData extends AnyObject, FORM_STEP_ID>({
           </Step>
         ))}
       </Stepper>
-      <Stack gap={4} flex={1}>
+      <Stack gap={4} flex={1} width="100%" overflow="hidden">
         {loaded ? (
           <activeStep.component
             ref={formRef}
@@ -214,7 +231,7 @@ const FormStepper = <FormData extends AnyObject, FORM_STEP_ID>({
         ) : (
           <Skeleton variant="rounded" height={200} />
         )}
-        <Stack direction="row" alignItems="center">
+        <Stack direction="row" alignItems="center" width="100%">
           {!isFirstStep && (
             <Button
               onClick={onPrevious}

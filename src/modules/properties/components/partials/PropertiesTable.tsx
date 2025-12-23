@@ -4,33 +4,39 @@ import { Any, CRUD_ACTION, CrudRow } from '@common/defs/types';
 import { GridColumns, GridRenderCellParams } from '@mui/x-data-grid';
 import Namespaces from '@common/defs/namespaces';
 import { useTranslation } from 'react-i18next';
+import { getTranslatedText } from '@common/utils/translations';
 import { useEffect, useState } from 'react';
 import { Property, PROPERTY_STATUS, PROPERTY_TYPE } from '@modules/properties/defs/types';
 import useProperties, {
   CreateOneInput,
   UpdateOneInput,
 } from '@modules/properties/hooks/api/useProperties';
-import { Chip, Stack, Tooltip, useTheme, Box, Typography } from '@mui/material';
+import { Chip, Stack, Tooltip, useTheme, Box, Typography, Avatar } from '@mui/material';
 import {
-  KeyboardDoubleArrowUp,
-  KeyboardDoubleArrowDown,
   Public,
   Phone,
   EmailOutlined,
   Place,
-  CircleNotifications,
-  Category,
   LocalOffer,
   CalendarToday,
   AccessTime,
-  InfoOutlined,
+  Visibility,
+  Apartment,
+  House,
+  Villa,
+  Business,
+  DirectionsCar,
+  Home,
+  Landscape,
+  CalendarMonth,
 } from '@mui/icons-material';
 import { Language } from '@modules/users/defs/types';
-import PropertyStatus from './PropertyStatus';
 import { useRouter } from 'next/router';
 import usePermissions from '@modules/permissions/hooks/usePermissions';
 import namespace from '@modules/properties/defs/namespace';
 import { Agent } from '@modules/agents/defs/types';
+import Image from 'next/image';
+import PropertyRentalManagementModal from './PropertyRentalManagementModal';
 
 interface Row extends CrudRow {
   title: string;
@@ -50,92 +56,166 @@ interface Row extends CrudRow {
   type: PROPERTY_TYPE;
   agents: Agent[];
   amenities: Any[];
+  images: Any[];
+  features: Any;
+  rentals: Any[];
 }
+
+const getPropertyTypeIcon = (type: PROPERTY_TYPE) => {
+  switch (type) {
+    case PROPERTY_TYPE.HOUSE:
+      return <House fontSize="small" />;
+    case PROPERTY_TYPE.APARTMENT:
+      return <Apartment fontSize="small" />;
+    case PROPERTY_TYPE.VILLA:
+      return <Villa fontSize="small" />;
+    case PROPERTY_TYPE.STUDIO:
+      return <Home fontSize="small" />;
+    case PROPERTY_TYPE.COMMERCIAL:
+      return <Business fontSize="small" />;
+    case PROPERTY_TYPE.OFFICE:
+      return <Business fontSize="small" />;
+    case PROPERTY_TYPE.GARAGE:
+      return <DirectionsCar fontSize="small" />;
+    case PROPERTY_TYPE.MANSION:
+      return <Villa fontSize="small" />;
+    case PROPERTY_TYPE.LAND:
+      return <Landscape fontSize="small" />;
+    default:
+      return <Home fontSize="small" />;
+  }
+};
+
+const isPropertyCurrentlyRented = (rentals: Any[] = []) => {
+  const now = new Date();
+  return rentals.some((rental) => {
+    const startDate = new Date(rental.startDate);
+    const endDate = new Date(rental.endDate);
+    return now >= startDate && now <= endDate;
+  });
+};
 
 const PropertiesTable = () => {
   const { t, i18n } = useTranslation(['property']);
+
+  const getPropertyTypeLabel = (type: PROPERTY_TYPE) => {
+    const typeKey = type.toLowerCase();
+    return t(`property:types.${typeKey}`) || type.replace('_', ' ');
+  };
   const theme = useTheme();
   const router = useRouter();
   const { can } = usePermissions();
+  const [rentalManagementOpen, setRentalManagementOpen] = useState(false);
+  const [rentalManagementProperty, setRentalManagementProperty] = useState<Property | null>(null);
 
   const columns: GridColumns<Row> = [
     {
-      field: 'title',
-      headerName: t('property:list.title'),
-      flex: 2,
-      minWidth: 200,
-      renderCell: (params: GridRenderCellParams<string>) => (
-        <Stack direction="row" alignItems="center" spacing={1.5}>
-          <strong>{params.value}</strong>
-        </Stack>
-      ),
+      field: 'id',
+      headerName: 'ID',
+      width: 90,
     },
     {
-      field: 'details',
-      headerName: t('property:list.details'),
-      flex: 1.5,
-      minWidth: 100,
+      field: 'location.city',
+      headerName: t('property:list.city'),
+      width: 120,
+      hide: true,
+      filterable: true,
+      sortable: false,
+    },
+    {
+      field: 'image',
+      headerName: t('property:list.property_image'),
+      width: 300,
+      sortable: false,
+      filterable: false,
       renderCell: (params) => {
-        const locationValue = {
-          city: params.row.location?.city || '',
-          address: params.row.streetAddress || '',
-        };
+        const firstImage = params.row.images?.[0];
+        const imageUrl = firstImage?.upload?.url || '/images/placeholder-property.jpg';
 
         return (
           <Box
             sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 1.5,
-              width: '100%',
-              py: 1.5,
+              position: 'relative',
+              width: 300,
+              height: 180,
+              borderRadius: 1,
+              overflow: 'hidden',
             }}
           >
-            {/* Property Type with Icon */}
-            <Stack direction="row" alignItems="center" spacing={1.5}>
-              <Category fontSize="small" color="primary" />
-              <Chip
-                label={params.row.type}
-                variant="outlined"
-                size="small"
-                sx={{
-                  borderRadius: 1,
-                  borderColor: 'divider',
-                  bgcolor: 'background.paper',
-                  fontWeight: 600,
-                  textTransform: 'capitalize',
-                }}
-              />
-            </Stack>
-
-            {/* Status with Icon */}
-            <Stack direction="row" alignItems="center" spacing={1.5}>
-              <CircleNotifications fontSize="small" color="primary" />
-              <PropertyStatus status={params.row.status} />
-            </Stack>
-
-            {/* Location with Icon and Tooltip */}
-            <Stack direction="row" alignItems="center" spacing={1.5}>
-              <Place fontSize="small" color="primary" />
-              <Box>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontWeight: 600,
-                  }}
-                >
-                  {locationValue.address}
-                </Typography>
-              </Box>
-            </Stack>
+            <Image
+              src={imageUrl}
+              alt={params.row.title}
+              fill
+              style={{
+                objectFit: 'cover',
+                objectPosition: 'center',
+              }}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/images/placeholder-property.jpg';
+              }}
+            />
           </Box>
         );
       },
     },
     {
+      field: 'title',
+      headerName: t('property:list.title') || 'Property',
+      flex: 2,
+      minWidth: 250,
+      renderCell: (params: GridRenderCellParams<string>) => (
+        <Box sx={{ width: '100%', py: 1 }}>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontWeight: 700,
+              color: 'text.primary',
+              mb: 0.5,
+              cursor: 'pointer',
+              '&:hover': {
+                color: 'primary.main',
+              },
+            }}
+            onClick={() => {
+              router.push(Routes.Properties.ReadOne.replace('{id}', params.row.id.toString()));
+            }}
+          >
+            {params.value}
+          </Typography>
+
+          <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+            {getPropertyTypeIcon(params.row.type)}
+            <Chip
+              label={getPropertyTypeLabel(params.row.type)}
+              size="small"
+              variant="outlined"
+              sx={{
+                borderRadius: 1,
+                borderColor: 'divider',
+                bgcolor: 'background.paper',
+                fontWeight: 600,
+                textTransform: 'capitalize',
+                fontSize: '0.7rem',
+              }}
+            />
+          </Stack>
+
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Place fontSize="small" color="primary" />
+            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+              {params.row.location?.city || t('property:list.unknown_location')}
+            </Typography>
+          </Stack>
+        </Box>
+      ),
+    },
+
+    {
       field: 'pricing',
-      headerName: t('property:list.pricing'),
-      flex: 1,
+      headerName: t('property:list.pricing') || 'Pricing',
+      flex: 1.5,
+      sortable: false,
       minWidth: 200,
       renderCell: (params) => {
         const {
@@ -145,83 +225,142 @@ const PropertiesTable = () => {
           currency,
           monthlyPriceEnabled,
           dailyPriceEnabled,
+          status,
         } = params.row;
 
+        const isSoldOrRented = status === PROPERTY_STATUS.SOLD || status === PROPERTY_STATUS.RENTED;
+
         return (
-          <Stack direction="column" spacing={0.5}>
-            {/* Sale Price */}
-            <Stack direction="row" alignItems="center" spacing={1}>
+          <Box sx={{ py: 1 }}>
+            <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
               <LocalOffer fontSize="small" color="primary" />
-              <Typography variant="body2" fontWeight={600}>
+              <Typography
+                variant="body2"
+                fontWeight={700}
+                sx={{
+                  color: isSoldOrRented ? 'text.disabled' : 'text.primary',
+                  textDecoration: isSoldOrRented ? 'line-through' : 'none',
+                }}
+              >
                 {salePrice.toLocaleString()} {currency}
               </Typography>
             </Stack>
 
-            {/* Monthly Price */}
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <CalendarToday fontSize="small" color="primary" />
-              {monthlyPriceEnabled ? (
-                <Typography variant="body2" fontWeight={600}>
+            {monthlyPriceEnabled && (
+              <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5 }}>
+                <CalendarToday fontSize="small" color="primary" />
+                <Typography variant="body2" fontWeight={600} color="text.secondary">
                   {monthlyPrice.toLocaleString()} {currency}/mo
                 </Typography>
-              ) : (
-                <Typography variant="caption" color="textSecondary">
-                  {t('property:list.disabled')}
-                </Typography>
-              )}
-            </Stack>
+              </Stack>
+            )}
 
-            {/* Daily Price */}
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <AccessTime fontSize="small" color="primary" />
-              {dailyPriceEnabled ? (
-                <Typography variant="body2" fontWeight={600}>
+            {dailyPriceEnabled && (
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <AccessTime fontSize="small" color="primary" />
+                <Typography variant="body2" fontWeight={600} color="text.secondary">
                   {dailyPrice.toLocaleString()} {currency}/day
                 </Typography>
-              ) : (
-                <Typography variant="caption" color="textSecondary">
-                  {t('property:list.disabled')}
-                </Typography>
-              )}
-            </Stack>
-          </Stack>
+              </Stack>
+            )}
+          </Box>
+        );
+      },
+    },
+    {
+      field: 'status',
+      headerName: t('property:list.status') || 'Status',
+      flex: 1,
+      minWidth: 120,
+      renderCell: (params) => {
+        const { status, rentals } = params.row;
+        const isCurrentlyRented = isPropertyCurrentlyRented(rentals);
+
+        if (status === PROPERTY_STATUS.SOLD) {
+          return (
+            <Box sx={{ py: 1 }}>
+              <Chip
+                label={t('property:status.sold')}
+                color="error"
+                size="small"
+                sx={{
+                  fontWeight: 700,
+                  borderRadius: 1,
+                }}
+              />
+            </Box>
+          );
+        }
+
+        if (status === PROPERTY_STATUS.RENTED) {
+          return (
+            <Box sx={{ py: 1 }}>
+              <Chip
+                label={t('property:status.rented')}
+                color="error"
+                size="small"
+                sx={{
+                  fontWeight: 700,
+                  borderRadius: 1,
+                }}
+              />
+            </Box>
+          );
+        }
+
+        if (isCurrentlyRented) {
+          return (
+            <Box sx={{ py: 1 }}>
+              <Chip
+                label={t('property:status.currently_rented')}
+                color="warning"
+                size="small"
+                sx={{
+                  fontWeight: 700,
+                  borderRadius: 1,
+                }}
+              />
+            </Box>
+          );
+        }
+
+        return (
+          <Box sx={{ py: 1 }}>
+            <Chip
+              label={t('property:status.available')}
+              color="success"
+              size="small"
+              sx={{
+                fontWeight: 700,
+                borderRadius: 1,
+              }}
+            />
+          </Box>
         );
       },
     },
     {
       field: 'agents',
-      headerName: t('property:list.agents'),
-      flex: 1.1,
+      headerName: t('property:list.agents') || 'Agents',
+      flex: 1.2,
+      sortable: false,
       minWidth: 150,
       renderCell: (params) => (
-        <Box
-          sx={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 1,
-            alignItems: 'center',
-            py: 1,
-            width: '100%',
-          }}
-        >
+        <Box sx={{ py: 1 }}>
           {params.row.agents?.map((agent, index) => (
             <Tooltip
               key={index}
               title={
-                <Box sx={{ p: 1.5, textAlign: 'left' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1.5 }}>
-                    <Box
+                <Box sx={{ p: 2, textAlign: 'left', minWidth: 280 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                    <Avatar
                       sx={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: '50%',
-                        bgcolor: 'background.paper',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'text.primary',
-                        fontWeight: 800,
-                        fontSize: 14,
+                        width: 48,
+                        height: 48,
+                        bgcolor: 'primary.main',
+                        fontWeight: 700,
+                        fontSize: 16,
+                        boxShadow: theme.shadows[2],
                       }}
                     >
                       {agent.user.name
@@ -230,50 +369,127 @@ const PropertiesTable = () => {
                         .map((n: string) => n.charAt(0))
                         .join('')
                         .toUpperCase()}
-                    </Box>
+                    </Avatar>
 
                     <Box>
-                      <Typography variant="subtitle2" fontWeight={600}>
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight={700}
+                        sx={{ color: 'text.primary', mb: 0.5 }}
+                      >
                         {agent.user.name}
                       </Typography>
-                      <Typography variant="caption">{agent.agencyName}</Typography>
+                      <Typography
+                        variant="body2"
+                        fontWeight={600}
+                        sx={{
+                          backgroundColor: 'primary.main',
+                          color: 'white',
+                          px: 1,
+                          py: 0.5,
+                          borderRadius: 1,
+                          display: 'inline-block',
+                          fontSize: '0.75rem',
+                        }}
+                      >
+                        {agent.agencyName}
+                      </Typography>
                     </Box>
                   </Box>
 
-                  <Box sx={{ display: 'grid', gap: 1, mb: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Phone fontSize="small" />
-                      <Typography variant="body2">{agent.user.phone}</Typography>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 1.5,
+                      mb: 2,
+                      p: 1.5,
+                      backgroundColor: 'grey.50',
+                      borderRadius: 1,
+                      border: '1px solid',
+                      borderColor: 'grey.200',
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: 24,
+                          height: 24,
+                          borderRadius: '50%',
+                          backgroundColor: 'success.main',
+                          color: 'white',
+                        }}
+                      >
+                        <Phone sx={{ fontSize: 14 }} />
+                      </Box>
+                      <Typography variant="body2" fontWeight={500} color="text.primary">
+                        {agent.user.phone}
+                      </Typography>
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <EmailOutlined fontSize="small" />
-                      <Typography variant="body2">{agent.user.email}</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: 24,
+                          height: 24,
+                          borderRadius: '50%',
+                          backgroundColor: 'info.main',
+                          color: 'white',
+                        }}
+                      >
+                        <EmailOutlined sx={{ fontSize: 14 }} />
+                      </Box>
+                      <Typography variant="body2" fontWeight={500} color="text.primary">
+                        {agent.user.email}
+                      </Typography>
                     </Box>
                   </Box>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Public fontSize="small" />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 24,
+                        height: 24,
+                        borderRadius: '50%',
+                        backgroundColor: 'warning.main',
+                        color: 'white',
+                      }}
+                    >
+                      <Public sx={{ fontSize: 14 }} />
+                    </Box>
+                    <Typography
+                      variant="body2"
+                      fontWeight={600}
+                      sx={{ mr: 1 }}
+                      color="text.primary"
+                    >
+                      {t('property:agent_tooltip.languages')}:
+                    </Typography>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
                       {agent.languages.map((lang: Language) => (
-                        <Box
+                        <Chip
                           key={lang.id}
+                          label={lang.name.slice(0, 2).toUpperCase()}
+                          size="small"
                           sx={{
-                            width: 24,
-                            height: 24,
-                            borderRadius: '50%',
-                            bgcolor: 'background.paper',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
+                            height: 20,
+                            fontSize: '0.65rem',
+                            fontWeight: 700,
+                            backgroundColor: 'primary.main',
+                            color: 'white',
+                            '& .MuiChip-label': {
+                              px: 0.5,
+                            },
                           }}
-                        >
-                          <Typography
-                            variant="caption"
-                            sx={{ color: 'text.primary', fontWeight: 600 }}
-                          >
-                            {lang.name.slice(0, 2).toUpperCase()}
-                          </Typography>
-                        </Box>
+                        />
                       ))}
                     </Box>
                   </Box>
@@ -284,10 +500,15 @@ const PropertiesTable = () => {
               componentsProps={{
                 tooltip: {
                   sx: {
+                    backgroundColor: 'background.paper',
                     border: '1px solid',
                     borderColor: 'divider',
-                    boxShadow: 2,
-                    maxWidth: 300,
+                    boxShadow: theme.shadows[8],
+                    borderRadius: 2,
+                    maxWidth: 320,
+                    '& .MuiTooltip-arrow': {
+                      color: 'background.paper',
+                    },
                   },
                 },
                 arrow: {
@@ -325,138 +546,13 @@ const PropertiesTable = () => {
         </Box>
       ),
     },
-    {
-      field: 'amenities',
-      headerName: t('property:list.amenities'),
-      flex: 1.2,
-      minWidth: 300,
-      renderCell: (params) => {
-        const theme = useTheme();
-        const [expanded, setExpanded] = useState(false);
-        const amenities = params.row.amenities || [];
-        const maxVisible = 6;
-        const visibleAmenities = expanded ? amenities : amenities.slice(0, maxVisible);
-        const hasOverflow = amenities.length > maxVisible;
 
-        return (
-          <Box
-            sx={{
-              p: 2,
-              width: '100%',
-              position: 'relative',
-              minHeight: 64,
-              '&:hover .toggle-indicator': {
-                opacity: 1,
-              },
-            }}
-          >
-            {/* Amenities Grid */}
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, 120px)',
-                justifyContent: 'space-evenly',
-                gap: 1,
-                marginBottom: hasOverflow ? 1 : 0,
-              }}
-            >
-              {visibleAmenities.map((amenity, index) => (
-                <Tooltip key={index} title={amenity.name} arrow>
-                  <Chip
-                    label={amenity.name}
-                    size="medium"
-                    sx={{
-                      width: '100%',
-                      maxWidth: 120,
-                      borderRadius: 1,
-                      transition: 'all 0.2s',
-                      bgcolor: theme.palette.primary.light,
-                      border: `1px solid ${theme.palette.divider}`,
-                      color: theme.palette.secondary.dark,
-                      '&:hover': {
-                        transform: 'translateY(-1px)',
-                        boxShadow: theme.shadows[1],
-                        borderColor: 'primary.main',
-                        backgroundColor: 'primary.main',
-                      },
-                      '& .MuiChip-label': {
-                        px: 1.5,
-                        py: 0.5,
-                        fontWeight: 600,
-                      },
-                    }}
-                    variant="outlined"
-                  />
-                </Tooltip>
-              ))}
-            </Box>
-
-            {/* Subtle Toggle Indicator */}
-            {hasOverflow && (
-              <Box
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setExpanded(!expanded);
-                }}
-                sx={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  cursor: 'pointer',
-                  opacity: 0.6,
-                  transition: 'all 0.2s',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  '&:hover': {
-                    opacity: 1,
-                    transform: 'translateX(-50%) scale(1.1)',
-                  },
-                }}
-                className="toggle-indicator"
-              >
-                {expanded ? (
-                  <KeyboardDoubleArrowUp
-                    sx={{
-                      fontSize: '1rem',
-                      color: theme.palette.text.secondary,
-                    }}
-                  />
-                ) : (
-                  <KeyboardDoubleArrowDown
-                    sx={{
-                      fontSize: '1rem',
-                      color: theme.palette.text.secondary,
-                    }}
-                  />
-                )}
-              </Box>
-            )}
-
-            {/* Empty State */}
-            {amenities.length === 0 && (
-              <Typography
-                variant="body2"
-                color="textSecondary"
-                sx={{
-                  fontStyle: 'italic',
-                  opacity: 0.8,
-                }}
-              >
-                {t('property:list.noAmenities')}
-              </Typography>
-            )}
-          </Box>
-        );
-      },
-    },
     {
       field: 'createdAt',
-      headerName: 'Created at',
+      headerName: t('property:list.created_at'),
       width: 120,
-      hide: true, // keep it out of view
-      sortable: false, // we’re sorting on the server anyway
+      hide: true,
+      sortable: false,
     },
   ];
 
@@ -468,7 +564,7 @@ const PropertiesTable = () => {
 
   const itemToRow = (item: Property): Row => ({
     id: item.id,
-    title: item.title,
+    title: getTranslatedText(item.title, i18n.language, t('property:list.untitled')),
     streetAddress: item.streetAddress,
     salePrice: Number(item.salePrice),
     monthlyPrice: Number(item.monthlyPrice),
@@ -479,37 +575,86 @@ const PropertiesTable = () => {
     monthlyPriceEnabled: item.monthlyPriceEnabled,
     dailyPriceEnabled: item.dailyPriceEnabled,
     createdAt: item.createdAt,
-    location: item.location,
+    location: {
+      city: getTranslatedText(
+        item.location?.city?.names,
+        i18n.language,
+        t('property:list.unknown_location')
+      ),
+    },
     agents: item.agents,
     amenities: item.amenities,
+    images: item.images,
+    features: item.features,
+    rentals: item.rental || [],
   });
 
   const detailsAction: RowAction<Property> = {
-    label: 'Details',
-    icon: <InfoOutlined />,
-    onClick: (id, item) => {
+    label: t('property:actions.details'),
+    icon: <Visibility />,
+    onClick: (id) => {
       router.push(Routes.Properties.ReadOne.replace('{id}', id.toString()));
     },
-    enabled: (id, item) => {
+    enabled: (id) => {
       return can(namespace, CRUD_ACTION.READ) || can(namespace, CRUD_ACTION.READ, id);
     },
   };
 
   const actions: RowAction<Property>[] = [detailsAction];
 
+  const manageBookingsAction: RowAction<Property> = {
+    label: t('property:actions.bookings'),
+    icon: <CalendarMonth />,
+    onClick: (_id, item) => {
+      setRentalManagementProperty(item);
+      setRentalManagementOpen(true);
+    },
+    enabled: () => true,
+  };
+
+  actions.push(manageBookingsAction);
+
   return (
-    <ItemsTable<Property, CreateOneInput, UpdateOneInput, Row>
-      namespace={Namespaces.Properties}
-      routes={Routes.Properties}
-      useItems={useProperties}
-      columns={translatedColumns}
-      itemToRow={itemToRow}
-      showEdit={() => true}
-      showDelete={() => true}
-      getRowHeight={() => 'auto'}
-      exportable
-      actions={actions}
-    />
+    <>
+      <ItemsTable<Property, CreateOneInput, UpdateOneInput, Row>
+        namespace={Namespaces.Properties}
+        routes={Routes.Properties}
+        useItems={useProperties}
+        columns={translatedColumns}
+        itemToRow={itemToRow}
+        showEdit={() => true}
+        showDelete={() => true}
+        getRowHeight={() => 200}
+        noHeader
+        exportable
+        search={{
+          enabled: true,
+          defaultField: 'id',
+          fields: [
+            { field: 'id', label: 'ID' },
+            { field: 'title', label: t('property:list.title') || 'Title' },
+            { field: 'location.city', label: t('property:list.city') },
+          ],
+          fieldsFromColumns: false,
+          placeholder: t('common:search') || 'Search',
+          operator: 'contains',
+          debounceMs: 300,
+        }}
+        sortModel={[{ field: 'createdAt', sort: 'desc' }]}
+        actions={actions}
+        density="comfortable"
+      />
+      {rentalManagementOpen && rentalManagementProperty && (
+        <PropertyRentalManagementModal
+          open={rentalManagementOpen}
+          onClose={() => {
+            setRentalManagementOpen(false);
+            setRentalManagementProperty(null);
+          }}
+          property={rentalManagementProperty}
+        />
+      )}
+    </>
   );
 };
 

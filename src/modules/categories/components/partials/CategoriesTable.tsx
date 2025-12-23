@@ -1,6 +1,6 @@
 import Routes from '@common/defs/routes';
 import ItemsTable, { RowAction } from '@common/components/partials/ItemsTable';
-import { CRUD_ACTION, CrudRow } from '@common/defs/types';
+import { Any, CRUD_ACTION, CrudRow } from '@common/defs/types';
 import { GridColumns, GridRenderCellParams } from '@mui/x-data-grid';
 import Namespaces from '@common/defs/namespaces';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,7 @@ import useCategories, {
   UpdateOneInput,
 } from '@modules/categories/hooks/api/useCategories';
 import { Category as CategoryType } from '@modules/categories/defs/types';
+import { getTranslatedText } from '@common/utils/translations';
 
 interface Row extends CrudRow {
   name: string;
@@ -74,9 +75,11 @@ const CategoriesTable = () => {
 
   const itemToRow = (item: CategoryType): Row => ({
     id: item.id,
-    name: item.name,
+    name: getTranslatedText(item.name as Any, '', i18n.language),
     slug: item.slug,
-    description: item.description,
+    description: item.description
+      ? getTranslatedText(item.description as Any, '', i18n.language)
+      : undefined,
   });
 
   const detailsAction: RowAction<CategoryType> = {

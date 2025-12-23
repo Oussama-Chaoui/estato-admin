@@ -1,0 +1,27 @@
+{
+  "common": {
+    "create_new_one": "Create New Article",
+    "new_one": "New Article",
+    "read_all": "Articles List",
+    "read_one": "Article Details",
+    "items": "Articles",
+    "edit_one": "Edit Article"
+  },
+  "list": {
+    "title": "Title",
+    "status": "Status",
+    "publishedAt": "Published At",
+    "categories": "Categories",
+    "tags": "Tags",
+    "unpublished": "Not published"
+  },
+  "status": {
+    "draft": "Draft",
+    "published": "Published",
+    "archived": "Archived"
+  },
+  "actions": {
+    "publish": "Publish",
+    "archive": "Archive"
+  }
+}

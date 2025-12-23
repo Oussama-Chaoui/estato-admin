@@ -4,8 +4,9 @@ const prefix = '/users';
 const Routes: CrudAppRoutes = {
   ReadAll: prefix,
   Me: prefix + '/me',
+  ReadOne: prefix + '/{id}',
   CreateOne: prefix + '/create',
-  UpdateOne: prefix + '/{id}',
+  UpdateOne: prefix + '/edit/{id}',
 };
 
 export default Routes;

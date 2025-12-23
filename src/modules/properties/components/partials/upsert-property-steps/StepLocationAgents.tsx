@@ -1,4 +1,3 @@
-// StepLocationAgents.tsx
 import React, { forwardRef, useImperativeHandle, useEffect, useMemo, useState } from 'react';
 import { Box, CircularProgress, Grid, Paper, Typography, useTheme } from '@mui/material';
 import { useForm, FormProvider } from 'react-hook-form';
@@ -9,90 +8,202 @@ import useAgents from '@modules/agents/hooks/api/useAgents';
 import { Id } from '@common/defs/types';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Location } from '@modules/locations/defs/types';
+import { City } from '@modules/locations/defs/types';
 import { Agent } from '@modules/agents/defs/types';
 import { RHFTextField } from '@common/components/lib/react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { getTranslatedText } from '@common/utils/translations';
 
 export interface StepLocationAgentsData {
-  locationId: Id;
+  cityId: Id;
+  streetAddress: {
+    en?: string;
+    fr: string;
+    es?: string;
+  };
   latitude: number;
   longitude: number;
   agentIds: Id[];
 }
 
-const schema = yup.object({
-  locationId: yup
-    .number()
-    .required('Location is required')
-    .notOneOf([0], 'Please select a valid location'),
-  latitude: yup
-    .number()
-    .required('Latitude is required')
-    .min(-90, 'Latitude must be between -90 and 90')
-    .max(90, 'Latitude must be between -90 and 90'),
-  longitude: yup
-    .number()
-    .required('Longitude is required')
-    .min(-180, 'Longitude must be between -180 and 180')
-    .max(180, 'Longitude must be between -180 and 180'),
-  agentIds: yup.array().of(yup.number()).min(1, 'At least one agent must be selected'),
-});
+interface StructuredLocationData {
+  location: {
+    cityId: number;
+    streetAddress: {
+      en?: string;
+      fr: string;
+      es?: string;
+    };
+    latitude: number;
+    longitude: number;
+  };
+  agentIds: Id[];
+  locationId?: number;
+}
+
+const buildSchema = (t: (key: string) => string) =>
+  yup.object({
+    cityId: yup
+      .number()
+      .required(t('property:step_location_agents.validation.city_required'))
+      .notOneOf([0], t('property:step_location_agents.validation.city_invalid')),
+    streetAddress: yup.object({
+      en: yup.string().nullable(),
+      fr: yup
+        .string()
+        .required(t('property:step_location_agents.validation.french_street_required')),
+      es: yup.string().nullable(),
+      ar: yup
+        .string()
+        .required(t('property:step_location_agents.validation.arabic_street_required')),
+    }),
+    latitude: yup
+      .number()
+      .required(t('property:step_location_agents.validation.latitude_required'))
+      .min(-90, t('property:step_location_agents.validation.latitude_range'))
+      .max(90, t('property:step_location_agents.validation.latitude_range')),
+    longitude: yup
+      .number()
+      .required(t('property:step_location_agents.validation.longitude_required'))
+      .min(-180, t('property:step_location_agents.validation.longitude_range'))
+      .max(180, t('property:step_location_agents.validation.longitude_range')),
+    agentIds: yup
+      .array()
+      .of(yup.number())
+      .min(1, t('property:step_location_agents.validation.agents_required')),
+  });
 
 const StepLocationAgents = forwardRef<FormStepRef, FormStepProps>(({ data, next }, ref) => {
-  const { items: locations } = useLocations({ fetchItems: true, pageSize: 'all' });
-  const { items: agents } = useAgents({ fetchItems: true });
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const { t, i18n } = useTranslation(['property']);
+  const { readAllCitiesWithRegions } = useLocations();
+  const { readAll: readAllAgents } = useAgents();
+  const [cities, setCities] = useState<City[]>([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [loadingCities, setLoadingCities] = useState(true);
+  const [loadingAgents, setLoadingAgents] = useState(true);
+  const [selectedCity, setSelectedCity] = useState<City | null>(null);
+  const [hasFormBeenModified, setHasFormBeenModified] = useState(false);
   const theme = useTheme();
 
-  console.log('data: ', data);
+  useEffect(() => {
+    fetchCities();
+  }, []);
+
+  useEffect(() => {
+    fetchAgents();
+  }, []);
+
+  const fetchCities = async () => {
+    try {
+      setLoadingCities(true);
+      const response = await readAllCitiesWithRegions();
+      if (response.success && response.data?.items) {
+        setCities(response.data.items);
+      }
+    } catch (error) {
+      console.error('Error fetching cities:', error);
+    } finally {
+      setLoadingCities(false);
+    }
+  };
+
+  const fetchAgents = async () => {
+    try {
+      setLoadingAgents(true);
+      const response = await readAllAgents(1, 'all');
+      if (response.success && response.data?.items) {
+        setAgents(response.data.items);
+      }
+    } catch (error) {
+      console.error('Error fetching agents:', error);
+    } finally {
+      setLoadingAgents(false);
+    }
+  };
 
   const methods = useForm<StepLocationAgentsData>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(buildSchema(t)),
     defaultValues: {
-      locationId: data?.locationId || 0,
+      cityId: data?.location?.cityId || 0,
+      streetAddress: data?.location?.streetAddress || { en: '', fr: '', es: '', ar: '' },
       latitude: data?.location?.latitude || 0,
       longitude: data?.location?.longitude || 0,
       agentIds: data?.agentIds || [],
     },
   });
 
+  useEffect(() => {
+    const subscription = methods.watch((value, { name }) => {
+      if (name) {
+        setHasFormBeenModified(true);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [methods]);
+
   useImperativeHandle(ref, () => ({
     async submit() {
-      await methods.handleSubmit((formData) => next(formData))();
+      await methods.handleSubmit((formData) => {
+        const isEditMode = data?.locationId;
+
+        const structuredData: StructuredLocationData = {
+          location: {
+            cityId: formData.cityId,
+            streetAddress: formData.streetAddress,
+            latitude: formData.latitude,
+            longitude: formData.longitude,
+          },
+          agentIds: formData.agentIds,
+        };
+
+        if (isEditMode) {
+          structuredData.locationId = data.locationId;
+        }
+
+        next(structuredData);
+      })();
     },
   }));
 
   useEffect(() => {
-    if (selectedLocation) {
-      methods.setValue('latitude', selectedLocation.latitude);
-      methods.setValue('longitude', selectedLocation.longitude);
+    if (selectedCity) {
+      methods.setValue('latitude', selectedCity.latitude || 0);
+      methods.setValue('longitude', selectedCity.longitude || 0);
     }
-  }, [selectedLocation, methods]);
+  }, [selectedCity, methods]);
 
   useEffect(() => {
-    methods.reset({
-      locationId: data?.locationId || 0,
-      latitude: data?.location?.latitude || 0,
-      longitude: data?.location?.longitude || 0,
-      agentIds: data?.agentIds || [],
-    });
-  }, [data, methods]);
+    const hasLocationData = data?.location?.cityId && data.location.cityId !== 0;
+    const hasStreetAddress =
+      data?.location?.streetAddress &&
+      (data.location.streetAddress.fr || data.location.streetAddress.ar);
 
-  const sortedLocations = useMemo(() => {
-    if (!locations) {
+    if ((hasLocationData || hasStreetAddress) && !hasFormBeenModified) {
+      methods.reset({
+        cityId: data?.location?.cityId || 0,
+        streetAddress: data?.location?.streetAddress || { en: '', fr: '', es: '', ar: '' },
+        latitude: data?.location?.latitude || 0,
+        longitude: data?.location?.longitude || 0,
+        agentIds: data?.agentIds || [],
+      });
+    }
+  }, [data, methods, hasFormBeenModified]);
+
+  const sortedCities = useMemo(() => {
+    if (!cities) {
       return [];
     }
-    return [...locations].sort((a, b) => {
-      const regionCompare = a.region.localeCompare(b.region);
+    return [...cities].sort((a, b) => {
+      const regionCompare = (a.region?.names?.fr || '').localeCompare(b.region?.names?.fr || '');
       if (regionCompare !== 0) {
         return regionCompare;
       }
-      return a.city.localeCompare(b.city);
+      return (a.names?.fr || '').localeCompare(b.names?.fr || '');
     });
-  }, [locations]);
+  }, [cities]);
 
   const sortedAgents = useMemo(() => {
-    if (!agents) {
+    if (!agents || agents.length === 0) {
       return [];
     }
     return [...agents].sort((a, b) => {
@@ -104,12 +215,12 @@ const StepLocationAgents = forwardRef<FormStepRef, FormStepProps>(({ data, next 
     });
   }, [agents]);
 
-  const handleLocationChange = (id: number) => {
-    const location = locations?.find((loc) => loc.id === id);
-    setSelectedLocation(location || null);
+  const handleCityChange = (id: number) => {
+    const city = cities?.find((city) => city.id === id);
+    setSelectedCity(city || null);
   };
 
-  if (!locations || !agents) {
+  if (loadingCities || loadingAgents) {
     return (
       <Box sx={{ p: 3 }}>
         <Paper
@@ -127,22 +238,25 @@ const StepLocationAgents = forwardRef<FormStepRef, FormStepProps>(({ data, next 
         >
           <CircularProgress size={50} thickness={4} sx={{ color: theme.palette.primary.main }} />
           <Typography variant="h6" color="text.secondary">
-            Loading Locations & Agents...
+            {t('property:step_location_agents.loading_cities_agents')}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Please wait while we load the required data
+            {t('property:step_location_agents.loading_data_desc')}
           </Typography>
         </Paper>
       </Box>
     );
   }
 
-  const locationOptions = sortedLocations.map((loc: Location) => loc.id);
+  const cityOptions = sortedCities.map((city: City) => city.id);
   const agentOptions = sortedAgents.map((agent: Agent) => agent.id);
 
-  const getLocationLabel = (id: number) => {
-    const loc = locations.find((l) => l.id === id);
-    return loc ? `${loc.city}` : '';
+  const getCityLabel = (id: number) => {
+    const city = cities.find((c) => c.id === id);
+    if (!city) {
+      return '';
+    }
+    return getTranslatedText(city.names, i18n.language, city.names?.en || '');
   };
 
   const getAgentLabel = (id: number) => {
@@ -153,66 +267,121 @@ const StepLocationAgents = forwardRef<FormStepRef, FormStepProps>(({ data, next 
   return (
     <FormProvider {...methods}>
       <Box sx={{ p: 3 }}>
-        <Paper sx={{ p: 3, backgroundColor: theme.palette.background.paper }}>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>
-                Location Details
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Paper sx={{ p: 3, backgroundColor: theme.palette.background.paper }}>
+              <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.dark }}>
+                {t('property:step_location_agents.location_details')}
               </Typography>
-              <Grid container spacing={3}>
+
+              <Grid container spacing={2}>
                 <Grid item xs={12}>
                   <RHFAutocomplete
-                    name="locationId"
-                    label="Select Location"
-                    options={locationOptions}
+                    name="cityId"
+                    label={t('property:step_location_agents.select_city')}
+                    options={cityOptions}
                     fullWidth
                     getOptionLabel={(option) =>
-                      typeof option === 'number' ? getLocationLabel(option) : ''
+                      typeof option === 'number' ? getCityLabel(option) : ''
                     }
                     groupBy={(option) => {
-                      const loc = locations.find((l) => l.id === option);
-                      return loc?.region ?? '';
+                      const city = cities.find((c) => c.id === option);
+                      return getTranslatedText(
+                        city?.region?.names,
+                        i18n.language,
+                        city?.region?.names?.en || ''
+                      );
                     }}
-                    onChange={(_, id) => handleLocationChange(Number(id))}
-                  />
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <RHFTextField
-                    name="latitude"
-                    label="Latitude"
-                    type="number"
-                    fullWidth
-                    inputProps={{
-                      step: '0.000001',
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <RHFTextField
-                    name="longitude"
-                    label="Longitude"
-                    type="number"
-                    fullWidth
-                    inputProps={{
-                      step: '0.000001',
-                    }}
+                    onChange={(_, id) => handleCityChange(Number(id))}
                   />
                 </Grid>
               </Grid>
-            </Grid>
 
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>
-                Associate Agents
+              <Box sx={{ mt: 3 }}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ mb: 2, color: theme.palette.text.primary, fontWeight: 600 }}
+                >
+                  {t('property:step_location_agents.street_address')}
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={6}>
+                    <RHFTextField
+                      name="streetAddress.fr"
+                      label={`${t('property:step_location_agents.french')} *`}
+                      fullWidth
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <RHFTextField
+                      name="streetAddress.ar"
+                      label={`${t('property:step_location_agents.arabic')} *`}
+                      fullWidth
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <RHFTextField
+                      name="streetAddress.en"
+                      label={t('property:step_location_agents.english')}
+                      fullWidth
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <RHFTextField
+                      name="streetAddress.es"
+                      label={t('property:step_location_agents.spanish')}
+                      fullWidth
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
+
+              <Box sx={{ mt: 3 }}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ mb: 2, color: theme.palette.text.primary, fontWeight: 600 }}
+                >
+                  {t('property:step_location_agents.coordinates')}
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={6}>
+                    <RHFTextField
+                      name="latitude"
+                      label={t('property:step_location_agents.latitude')}
+                      type="number"
+                      fullWidth
+                      inputProps={{
+                        step: '0.000001',
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <RHFTextField
+                      name="longitude"
+                      label={t('property:step_location_agents.longitude')}
+                      type="number"
+                      fullWidth
+                      inputProps={{
+                        step: '0.000001',
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
+            </Paper>
+          </Grid>
+
+          <Grid item xs={12}>
+            <Paper sx={{ p: 3, backgroundColor: theme.palette.background.paper }}>
+              <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.dark }}>
+                {t('property:step_location_agents.associate_agents')}
               </Typography>
               <RHFAutocomplete
                 name="agentIds"
-                label="Select Agents"
+                label={t('property:step_location_agents.select_agents')}
                 multiple
                 options={agentOptions}
                 fullWidth
-                placeholder="Choose agents"
                 getOptionLabel={(option) =>
                   typeof option === 'number' ? getAgentLabel(option) : ''
                 }
@@ -221,9 +390,9 @@ const StepLocationAgents = forwardRef<FormStepRef, FormStepProps>(({ data, next 
                   return ag?.agencyName ?? '';
                 }}
               />
-            </Grid>
+            </Paper>
           </Grid>
-        </Paper>
+        </Grid>
       </Box>
     </FormProvider>
   );

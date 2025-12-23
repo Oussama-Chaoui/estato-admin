@@ -1,5 +1,6 @@
 import React, { forwardRef, useImperativeHandle, useEffect, useState, useCallback } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Grid,
@@ -31,8 +32,7 @@ import { SortableContext, useSortable, arrayMove, rectSortingStrategy } from '@d
 import { CSS } from '@dnd-kit/utilities';
 import { RHFTextField } from '@common/components/lib/react-hook-form';
 import useUploads from '@modules/uploads/hooks/api/useUploads';
-
-/* ───────────────────────────── styled helpers ────────────────────────────── */
+import { UPLOAD_STATUS } from '@modules/properties/defs/types';
 
 const Dropzone = styled(Paper)(({ theme }) => ({
   border: `2px dashed ${theme.palette.divider}`,
@@ -116,9 +116,38 @@ const StatusIndicator = styled(Box)(({ theme }) => ({
   boxShadow: theme.shadows[1],
 }));
 
-/* ──────────────────────────────── types ──────────────────────────────────── */
+const DeletionOverlay = styled(Box)(() => ({
+  position: 'absolute',
+  inset: 0,
+  backgroundColor: 'rgba(211, 47, 47, 0.85)',
+  backdropFilter: 'blur(2px)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  zIndex: 3,
+  borderRadius: 'inherit',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  animation: 'fadeIn 0.3s ease-in-out',
+  '@keyframes fadeIn': {
+    '0%': {
+      opacity: 0,
+      transform: 'scale(0.95)',
+    },
+    '100%': {
+      opacity: 1,
+      transform: 'scale(1)',
+    },
+  },
+}));
 
-type UploadStatus = 'uploading' | 'uploaded' | 'error';
+const DeletionContent = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: theme.spacing(1),
+  padding: theme.spacing(2),
+}));
 
 interface ImageItem {
   uiId: string;
@@ -127,36 +156,35 @@ interface ImageItem {
   preview?: string;
   caption: string;
   ordering: number;
-  status: UploadStatus;
+  status: UPLOAD_STATUS;
 }
 
 interface StepImagesData {
   images: ImageItem[];
 }
 
-/* ───────────────────────── validation schema ─────────────────────────────── */
-
-const schema = yup.object({
-  images: yup.array().of(
-    yup.object({
-      caption: yup.string().max(100, 'Caption must be less than 100 characters'),
-      ordering: yup.number().required(),
-    })
-  ),
-});
-
-/* ────────────────────── sortable thumbnail component ────────────────────── */
+const buildSchema = (t: (key: string) => string) =>
+  yup.object({
+    images: yup.array().of(
+      yup.object({
+        caption: yup.string().max(100, t('property:step_images.validation.caption_max')),
+        ordering: yup.number().required(),
+      })
+    ),
+  });
 
 const SortableThumb = ({
   item,
   index,
   handleDelete,
   setFiles,
+  t,
 }: {
   item: ImageItem;
   index: number;
   handleDelete: (idx: number) => void;
   setFiles: React.Dispatch<React.SetStateAction<ImageItem[]>>;
+  t: (key: string) => string;
 }) => {
   const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
     id: item.uiId,
@@ -167,6 +195,27 @@ const SortableThumb = ({
     transition,
     zIndex: isDragging ? 2 : 'auto',
   };
+
+  const isDeleting = item.status === UPLOAD_STATUS.DELETING;
+
+  let opacity = 1;
+  if (isDragging) {
+    opacity = 0.25;
+  } else if (isDeleting) {
+    opacity = 0.8;
+  }
+
+  let filter = 'none';
+  if (isDragging) {
+    filter = 'blur(2px)';
+  } else if (isDeleting) {
+    filter = 'grayscale(0.3)';
+  }
+
+  let pointerEvents: 'none' | 'auto' = 'auto';
+  if (isDragging || isDeleting) {
+    pointerEvents = 'none';
+  }
 
   return (
     <Grid
@@ -183,9 +232,11 @@ const SortableThumb = ({
       <ThumbnailContainer
         elevation={isDragging ? 6 : 3}
         sx={{
-          opacity: isDragging ? 0.25 : 1,
-          filter: isDragging ? 'blur(2px)' : 'none',
-          pointerEvents: isDragging ? 'none' : 'auto',
+          opacity,
+          filter,
+          pointerEvents,
+          transform: isDeleting ? 'scale(0.98)' : 'scale(1)',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         <Box
@@ -202,10 +253,10 @@ const SortableThumb = ({
         </Box>
 
         <StatusIndicator>
-          {item.status === 'uploading' && <CircularProgress size={16} />}
-          {item.status === 'uploaded' && <Check fontSize="small" color="success" />}
-          {item.status === 'error' && (
-            <Tooltip title="Upload failed">
+          {item.status === UPLOAD_STATUS.UPLOADING && <CircularProgress size={16} />}
+          {item.status === UPLOAD_STATUS.UPLOADED && <Check fontSize="small" color="success" />}
+          {item.status === UPLOAD_STATUS.ERROR && (
+            <Tooltip title={t('property:step_images.upload_failed')}>
               <ErrorOutline fontSize="small" color="error" />
             </Tooltip>
           )}
@@ -213,10 +264,35 @@ const SortableThumb = ({
 
         <Avatar variant="rounded" src={item.preview} sx={{ width: '100%', height: 200 }} />
 
+        {item.status === UPLOAD_STATUS.DELETING && (
+          <DeletionOverlay>
+            <DeletionContent>
+              <CircularProgress
+                size={28}
+                sx={{
+                  color: 'common.white',
+                }}
+              />
+              <Typography
+                sx={{
+                  color: 'common.white',
+                  fontWeight: 600,
+                  textAlign: 'center',
+                  fontSize: '0.75rem',
+                }}
+              >
+                {t('property:step_images.deleting')}
+              </Typography>
+            </DeletionContent>
+          </DeletionOverlay>
+        )}
+
         <ActionsOverlay className="actions">
           <IconButton
             color="error"
-            disabled={item.status === 'uploading'}
+            disabled={
+              item.status === UPLOAD_STATUS.UPLOADING || item.status === UPLOAD_STATUS.DELETING
+            }
             onClick={() => handleDelete(index)}
           >
             <Delete />
@@ -226,7 +302,7 @@ const SortableThumb = ({
 
       <CaptionField
         name={`images.${index}.caption`}
-        label="Caption"
+        label={t('property:step_images.caption')}
         fullWidth
         sx={{
           mt: 1,
@@ -236,7 +312,7 @@ const SortableThumb = ({
           },
         }}
         value={item.caption}
-        disabled={item.status === 'uploading'}
+        disabled={item.status === UPLOAD_STATUS.UPLOADING || item.status === UPLOAD_STATUS.DELETING}
         onChange={(e) =>
           setFiles((prev) =>
             prev.map((f, i) => (i === index ? { ...f, caption: e.target.value } : f))
@@ -247,20 +323,18 @@ const SortableThumb = ({
   );
 };
 
-/* ───────────────────────────── component ─────────────────────────────────── */
-
 const StepImages = forwardRef<FormStepRef, FormStepProps>(({ data, next }, ref) => {
+  const { t } = useTranslation(['property']);
   const theme = useTheme();
   const { createOne: uploadImage, deleteOne } = useUploads();
   const [files, setFiles] = useState<ImageItem[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const methods = useForm<StepImagesData>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(buildSchema(t)),
     defaultValues: { images: data?.images ?? [] },
   });
 
-  /* --------------------------- initialise list -------------------------- */
   useEffect(() => {
     if (data?.images && files.length === 0) {
       const sorted = [...data.images].sort((a, b) => a.ordering - b.ordering);
@@ -271,7 +345,7 @@ const StepImages = forwardRef<FormStepRef, FormStepProps>(({ data, next }, ref) 
           preview: img.preview,
           caption: img.caption,
           ordering: img.ordering,
-          status: 'uploaded' as const,
+          status: UPLOAD_STATUS.UPLOADED,
         }))
       );
     }
@@ -287,11 +361,11 @@ const StepImages = forwardRef<FormStepRef, FormStepProps>(({ data, next }, ref) 
     [files]
   );
 
-  /* ----------------------------- upload flow ---------------------------- */
-
   const handleUpload = useCallback(
     async (file: File, index: number) => {
-      setFiles((prev) => prev.map((f, i) => (i === index ? { ...f, status: 'uploading' } : f)));
+      setFiles((prev) =>
+        prev.map((f, i) => (i === index ? { ...f, status: UPLOAD_STATUS.UPLOADING } : f))
+      );
       try {
         const res = await uploadImage({ file });
         if (!res.success) {
@@ -302,7 +376,7 @@ const StepImages = forwardRef<FormStepRef, FormStepProps>(({ data, next }, ref) 
             i === index
               ? {
                   ...f,
-                  status: 'uploaded',
+                  status: UPLOAD_STATUS.UPLOADED,
                   uploadId: res.data!.item.id,
                   preview: res.data!.item.url,
                   file: undefined,
@@ -311,13 +385,13 @@ const StepImages = forwardRef<FormStepRef, FormStepProps>(({ data, next }, ref) 
           )
         );
       } catch {
-        setFiles((prev) => prev.map((f, i) => (i === index ? { ...f, status: 'error' } : f)));
+        setFiles((prev) =>
+          prev.map((f, i) => (i === index ? { ...f, status: UPLOAD_STATUS.ERROR } : f))
+        );
       }
     },
     [uploadImage]
   );
-
-  /* --------------------------- react-dropzone --------------------------- */
 
   const { getRootProps, getInputProps } = useDropzone({
     accept: { 'image/*': [] },
@@ -332,30 +406,39 @@ const StepImages = forwardRef<FormStepRef, FormStepProps>(({ data, next }, ref) 
           preview: blobUrl,
           caption: '',
           ordering,
-          status: 'uploading',
+          status: UPLOAD_STATUS.UPLOADING,
         };
       });
       setFiles((prev) => [...prev, ...newItems]);
     },
   });
 
-  /* ------------------------------- delete -------------------------------- */
-
   const handleDelete = useCallback(
     async (idx: number) => {
       const toDelete = files[idx];
-      if (toDelete.uploadId) {
-        await deleteOne(toDelete.uploadId);
+
+      setFiles((prev) =>
+        prev.map((f, i) => (i === idx ? { ...f, status: UPLOAD_STATUS.DELETING } : f))
+      );
+
+      try {
+        if (toDelete.uploadId) {
+          await deleteOne(toDelete.uploadId);
+        }
+        if (toDelete.preview?.startsWith('blob:')) {
+          URL.revokeObjectURL(toDelete.preview);
+        }
+
+        setFiles((prev) => prev.filter((_, i) => i !== idx).map((f, i) => ({ ...f, ordering: i })));
+      } catch (error) {
+        setFiles((prev) =>
+          prev.map((f, i) => (i === idx ? { ...f, status: UPLOAD_STATUS.UPLOADED } : f))
+        );
+        console.error('Failed to delete image:', error);
       }
-      if (toDelete.preview?.startsWith('blob:')) {
-        URL.revokeObjectURL(toDelete.preview);
-      }
-      setFiles((prev) => prev.filter((_, i) => i !== idx).map((f, i) => ({ ...f, ordering: i })));
     },
     [files, deleteOne]
   );
-
-  /* ------------------------------- submit ------------------------------- */
 
   useImperativeHandle(ref, () => ({
     submit: async () => {
@@ -374,8 +457,6 @@ const StepImages = forwardRef<FormStepRef, FormStepProps>(({ data, next }, ref) 
     },
   }));
 
-  /* ------------------------------- dnd-kit ------------------------------ */
-
   const sensors = useSensors(useSensor(PointerSensor));
 
   return (
@@ -390,7 +471,7 @@ const StepImages = forwardRef<FormStepRef, FormStepProps>(({ data, next }, ref) 
               }}
             >
               <Typography variant="h6" sx={{ mb: 2, color: theme.palette.primary.dark }}>
-                Property Images
+                {t('property:step_images.property_images')}
               </Typography>
 
               <Alert
@@ -402,16 +483,16 @@ const StepImages = forwardRef<FormStepRef, FormStepProps>(({ data, next }, ref) 
                   color: theme.palette.warning.dark,
                 }}
               >
-                <AlertTitle>Important Note</AlertTitle>
-                Images upload instantly. Removing one will delete it permanently.
+                <AlertTitle>{t('property:step_images.important_note')}</AlertTitle>
+                {t('property:step_images.upload_warning')}
               </Alert>
 
               <Dropzone {...getRootProps()} elevation={0} sx={{ mb: 4 }}>
                 <input {...getInputProps()} />
                 <CloudUpload sx={{ fontSize: 40, mb: 2, color: 'text.secondary' }} />
-                <Typography>Drag & drop images here, or click to select</Typography>
+                <Typography>{t('property:step_images.drag_drop_text')}</Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  Recommended size: 1200×800px • Max file size: 5 MB
+                  {t('property:step_images.recommended_size')}
                 </Typography>
               </Dropzone>
 
@@ -443,6 +524,7 @@ const StepImages = forwardRef<FormStepRef, FormStepProps>(({ data, next }, ref) 
                           index={idx}
                           handleDelete={handleDelete}
                           setFiles={setFiles}
+                          t={t}
                         />
                       </GridItem>
                     ))}

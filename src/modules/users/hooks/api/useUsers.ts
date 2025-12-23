@@ -4,15 +4,43 @@ import { User } from '@modules/users/defs/types';
 import useItems, { UseItems, UseItemsOptions, defaultOptions } from '@common/hooks/useItems';
 
 export interface CreateOneInput {
-  email: string;
+  id?: string | number;
+  name: string;
+  email: string | null;
+  phone: string | null;
   password: string;
   role: ROLE;
+  roles?: ROLE[];
+  photoId?: string;
+
+  licenceNumber?: string;
+  experience?: number;
+  bio?: string;
+  agencyName?: string;
+  agencyAddress?: string;
+
+  nicNumber?: string;
+  passport?: string;
 }
 
 export interface UpdateOneInput {
-  email: string;
+  id?: string | number;
+  name: string;
+  email: string | null;
+  phone: string | null;
   password?: string;
   role: ROLE;
+  roles?: ROLE[];
+  photoId?: string;
+
+  licenceNumber?: string;
+  experience?: number;
+  bio?: string;
+  agencyName?: string;
+  agencyAddress?: string;
+
+  nicNumber?: string;
+  passport?: string;
 }
 
 export type UpsertOneInput = CreateOneInput | UpdateOneInput;

@@ -1,0 +1,19 @@
+{
+  "page_title": "Notifications",
+  "new_badge": "Nouveau",
+  "mark_as_read": "Marquer comme lu",
+  "mark_all_read": "Tout marquer comme lu",
+  "delete": "Supprimer",
+  "loading": "Chargement...",
+  "load_more": "Charger plus",
+  "no_notifications_title": "Aucune notification pour le moment",
+  "no_notifications_message": "Vous verrez ici les mises à jour concernant les candidatures d'agents, les changements de propriétés et plus encore.",
+  "mark_all_read_success": "Toutes les notifications ont été marquées comme lues",
+  "mark_all_read_error": "Échec du marquage de toutes les notifications comme lues",
+  "delete_notification_success": "Notification supprimée",
+  "delete_notification_error": "Échec de la suppression de la notification",
+  "total_notification_one": "{{count}} notification au total",
+  "total_notification_other": "{{count}} notifications au total",
+  "unread": "non lues"
+}
+

@@ -2,8 +2,17 @@ import MenuPopover from '@common/components/lib/utils/MenuPopover/MenuPopover';
 import { Any, CRUD_ACTION, CrudAppRoutes, CrudRow, Id } from '@common/defs/types';
 import usePermissions from '@modules/permissions/hooks/usePermissions';
 import { FilterParam, SortParam, UseItems, UseItemsOptions } from '@common/hooks/useItems';
-import { DeleteOutline, Edit, MoreVert, LockTwoTone, LockOpen } from '@mui/icons-material';
-import { Box, Card, IconButton, MenuItem } from '@mui/material';
+import { DeleteOutline, Edit, MoreVert, LockTwoTone, LockOpen, Search } from '@mui/icons-material';
+import {
+  Box,
+  Card,
+  IconButton,
+  MenuItem,
+  TextField,
+  InputAdornment,
+  Select,
+  FormControl,
+} from '@mui/material';
 import Skeleton from '@mui/material/Skeleton';
 import Grid from '@mui/material/Unstable_Grid2';
 import {
@@ -18,11 +27,26 @@ import {
   GridFilterModel,
 } from '@mui/x-data-grid';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { GridRowHeightParams, GridRowHeightReturnValue } from '@mui/x-data-grid-premium';
 import { useDialogContext } from '@common/contexts/DialogContext';
 import { useTranslation } from 'react-i18next';
 import { FetchApiOptions } from '@common/hooks/useApi';
+
+interface SearchFieldOption {
+  field: string;
+  label?: string;
+}
+
+interface SearchProps {
+  enabled?: boolean;
+  defaultField?: string;
+  fieldsFromColumns?: boolean;
+  fields?: SearchFieldOption[];
+  placeholder?: string;
+  debounceMs?: number;
+  operator?: string;
+}
 
 interface ItemsTableProps<Item, CreateOneInput, UpdateOneInput, Row> {
   namespace: string;
@@ -43,6 +67,7 @@ interface ItemsTableProps<Item, CreateOneInput, UpdateOneInput, Row> {
   filterModel?: GridFilterModel;
   sortModel?: GridSortModel;
   refreshIndex?: number;
+  search?: SearchProps;
 }
 
 export interface RowAction<Item> {
@@ -71,16 +96,24 @@ const ItemsTable = <Item, CreateOneInput, UpdateOneInput, Row extends CrudRow>(
     filterModel: propFilterModel,
     sortModel: propSortModel,
     refreshIndex,
+    search,
   } = props;
   const { items, paginationMeta, readAll, deleteOne, mutate } = useItems(useItemsOptions);
   const [rows, setRows] = useState<Row[]>([]);
   const [columns, setColumns] = useState<GridColumns>([]);
   const [filterModel, setFilterModel] = useState<GridFilterModel>(propFilterModel || { items: [] });
-  const [sortModel, setSortModel] = useState<GridSortModel>(
-    propSortModel || [{ field: 'createdAt', sort: 'desc' }]
+  const defaultSortModel = useMemo<GridSortModel>(
+    () =>
+      propSortModel && propSortModel.length > 0
+        ? propSortModel
+        : [{ field: 'createdAt', sort: 'desc' }],
+    [propSortModel]
   );
+  const [sortModel, setSortModel] = useState<GridSortModel>(defaultSortModel);
   const [page, setPage] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(50);
+  const [searchText, setSearchText] = useState<string>('');
+  const [searchField, setSearchField] = useState<string>('');
 
   const TABLE_MIN_HEIGHT = '400px';
 
@@ -105,6 +138,26 @@ const ItemsTable = <Item, CreateOneInput, UpdateOneInput, Row extends CrudRow>(
   useEffect(() => {
     setColumns(initColumns);
   }, [initColumns]);
+
+  useEffect(() => {
+    if (!search) {
+      return;
+    }
+    if (!searchField) {
+      if (search.defaultField) {
+        setSearchField(search.defaultField);
+      } else if (search.fields && search.fields.length > 0) {
+        setSearchField(search.fields[0].field);
+      } else if (search.fieldsFromColumns && initColumns && initColumns.length > 0) {
+        const firstColumn = initColumns.find(
+          (c) => typeof c.field === 'string' && c.field !== 'actions'
+        );
+        if (firstColumn && typeof firstColumn.field === 'string') {
+          setSearchField(firstColumn.field);
+        }
+      }
+    }
+  }, [search, initColumns, searchField]);
 
   useEffect(() => {
     if (items && items.length > 0) {
@@ -171,6 +224,33 @@ const ItemsTable = <Item, CreateOneInput, UpdateOneInput, Row extends CrudRow>(
   }, [page, pageSize, sortModel, filterModel]);
 
   useEffect(() => {
+    if (!search) {
+      return;
+    }
+    const debounceMs = search.debounceMs ?? 300;
+    const baseOperator = search.operator ?? 'contains';
+    const op = searchField === 'id' && baseOperator === 'contains' ? 'equals' : baseOperator;
+    const timer = setTimeout(() => {
+      // Always update filter model, even on empty results, to avoid fallback to unfiltered state
+      if (searchText && searchField) {
+        setFilterModel({
+          items: [
+            {
+              columnField: searchField,
+              operatorValue: op,
+              value: searchText,
+            },
+          ],
+        });
+      } else {
+        setFilterModel({ items: [] });
+      }
+    }, debounceMs);
+
+    return () => clearTimeout(timer);
+  }, [searchText, searchField, search]);
+
+  useEffect(() => {
     mutate();
   }, [refreshIndex]);
 
@@ -200,6 +280,55 @@ const ItemsTable = <Item, CreateOneInput, UpdateOneInput, Row extends CrudRow>(
             </>
           ) : (
             <>
+              {search && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                    px: 2,
+                    pt: 1,
+                    pb: 1,
+                  }}
+                >
+                  {((search.fields && search.fields.length > 1) || search.fieldsFromColumns) && (
+                    <FormControl size="small" sx={{ minWidth: 180, mr: 1 }}>
+                      <Select
+                        value={searchField}
+                        onChange={(e) => setSearchField(e.target.value as string)}
+                        displayEmpty
+                      >
+                        {(search.fields && search.fields.length > 0
+                          ? search.fields
+                          : initColumns
+                              .filter((c) => typeof c.field === 'string' && c.field !== 'actions')
+                              .map((c) => ({
+                                field: c.field as string,
+                                label: (c.headerName as string) || (c.field as string),
+                              }))
+                        ).map((opt, idx) => (
+                          <MenuItem key={idx} value={opt.field}>
+                            {opt.label || opt.field}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  )}
+                  <TextField
+                    size="small"
+                    placeholder={search.placeholder || t('common:search')}
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Search fontSize="small" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Box>
+              )}
               <DataGrid
                 sortingMode="server"
                 filterMode="server"
@@ -213,7 +342,13 @@ const ItemsTable = <Item, CreateOneInput, UpdateOneInput, Row extends CrudRow>(
                 onPageSizeChange={(pageSize) => {
                   setPageSize(pageSize);
                 }}
-                onSortModelChange={(model) => setSortModel(model)}
+                onSortModelChange={(model) => {
+                  if (!model || model.length === 0) {
+                    setSortModel(defaultSortModel);
+                  } else {
+                    setSortModel(model);
+                  }
+                }}
                 onFilterModelChange={(model) => setFilterModel(model)}
                 rowCount={paginationMeta?.totalItems}
                 pageSize={pageSize}
@@ -270,6 +405,7 @@ const RowActionCell = <Item, CreateOneInput, UpdateOneInput>(
   const { can } = usePermissions();
   const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const { t } = useTranslation(['common']);
 
   const enabledActions =
     actions?.filter((action) => !action.enabled || action.enabled(id, item)) || [];
@@ -314,7 +450,7 @@ const RowActionCell = <Item, CreateOneInput, UpdateOneInput>(
       <IconButton color={anchorEl ? 'inherit' : 'default'} onClick={handleMenuOpen}>
         <MoreVert />
       </IconButton>
-      <MenuPopover open={anchorEl} onClose={handleMenuClose} arrow="right-top" sx={{ width: 140 }}>
+      <MenuPopover open={anchorEl} onClose={handleMenuClose} arrow="right-top">
         {showEdit && canUpdate(id) && (
           <MenuItem
             key="edit"
@@ -323,7 +459,7 @@ const RowActionCell = <Item, CreateOneInput, UpdateOneInput>(
               router.push(routes.UpdateOne.replace('{id}', id.toString()));
             }}
           >
-            <Edit /> Éditer
+            <Edit /> {t('common:table_actions.edit')}
           </MenuItem>
         )}
         {enabledActions.map((action, index) => (
@@ -346,18 +482,18 @@ const RowActionCell = <Item, CreateOneInput, UpdateOneInput>(
             onClick={() => {
               handleMenuClose();
               openConfirmDialog(
-                'Supprimer',
-                'Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible.',
+                t('common:table_actions.delete_confirm_title'),
+                t('common:table_actions.delete_confirm_message'),
                 () => {
                   deleteOne(id, { displayProgress: true, displaySuccess: true });
                 },
-                'Oui, supprimer',
+                t('common:table_actions.delete_confirm_yes'),
                 'error'
               );
             }}
             sx={{ color: 'error.main' }}
           >
-            <DeleteOutline /> Supprimer
+            <DeleteOutline /> {t('common:table_actions.delete')}
           </MenuItem>
         )}
       </MenuPopover>

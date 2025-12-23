@@ -9,7 +9,7 @@ import { Any } from '@common/defs/types';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 const LinkBehaviour = forwardRef<HTMLAnchorElement, Any>((props, ref) => {
-  return <NextLink ref={ref} {...props} />;
+  return <NextLink ref={ref} href={props.href as string} {...props} />;
 });
 
 const ComponentsOverrides: Components<Omit<Theme, 'components'>> = {
