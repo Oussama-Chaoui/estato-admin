@@ -148,7 +148,7 @@ const UpsertUserStepper = ({ itemId, preSelectedRole, onClose }: UpsertUserStepp
   return (
     <FormStepper<CreateOneInput, UPSERT_USER_STEP_ID>
       key={`upsert-user-stepper-${itemId ?? 'new'}-${preSelectedRole ?? 'none'}`}
-      id={`upsert-user-stepper-${itemId ?? 'new'}`}
+      id={`upsert-user-stepper-${itemId ?? 'new'}-${preSelectedRole ?? 'none'}`}
       steps={steps}
       onSubmit={onSubmit}
       initialData={getInitialData() as CreateOneInput}
