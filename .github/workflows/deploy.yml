@@ -26,82 +26,80 @@ jobs:
           chmod 700 ~/.ssh
           ssh-keyscan -p "${{ secrets.DEPLOY_PORT }}" -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Deploy
-        run: |
-          ssh -p "${{ secrets.DEPLOY_PORT }}" "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" bash -lc '
-            set -euo pipefail
-
-            REPO_NAME="${{ github.event.repository.name }}"
-
-            case "$REPO_NAME" in
-              api)
-                APP_DIR="/var/www/api"
-                LOCK="/tmp/deploy_api.lock"
-                ;;
-              app)
-                APP_DIR="/var/www/app"
-                LOCK="/tmp/deploy_app.lock"
-                ;;
-              admin)
-                APP_DIR="/var/www/admin"
-                LOCK="/tmp/deploy_admin.lock"
-                ;;
-              *)
-                echo "ERROR: Unknown repo name: $REPO_NAME"
-                echo "Expected repo names: api | app | admin"
+          - name: Deploy
+          run: |
+            ssh -p "${{ secrets.DEPLOY_PORT }}" "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" bash -lc '
+              set -euo pipefail
+  
+              REPO_NAME="${{ github.event.repository.name }}"
+  
+              case "$REPO_NAME" in
+                estato-api)
+                  APP_DIR="/var/www/yakout/api"
+                  LOCK="/tmp/deploy_estato_api.lock"
+                  ;;
+                estato-app)
+                  APP_DIR="/var/www/yakout/app"
+                  LOCK="/tmp/deploy_estato_app.lock"
+                  ;;
+                estato-admin)
+                  APP_DIR="/var/www/yakout/admin"
+                  LOCK="/tmp/deploy_estato_admin.lock"
+                  ;;
+                *)
+                  echo "ERROR: Unknown repo name: $REPO_NAME"
+                  echo "Expected repo names: estato-api | estato-app | estato-admin"
+                  exit 1
+                  ;;
+              esac
+  
+              echo "Repo: $REPO_NAME"
+              echo "Dir : $APP_DIR"
+  
+              if [ ! -d "$APP_DIR/.git" ]; then
+                echo "ERROR: $APP_DIR is not a git repo on the server"
                 exit 1
-                ;;
-            esac
-
-            echo "Repo: $REPO_NAME"
-            echo "Dir : $APP_DIR"
-
-            if [ ! -d "$APP_DIR/.git" ]; then
-              echo "ERROR: $APP_DIR is not a git repo on the server"
-              exit 1
-            fi
-
-            # Prevent two deploys from running at once on the server
-            exec 9>"$LOCK"
-            flock -n 9 || { echo "Deploy already running for $REPO_NAME"; exit 1; }
-
-            cd "$APP_DIR"
-
-            echo "Updating code..."
-            git fetch origin main
-            git reset --hard origin/main
-            echo "Now at: $(git rev-parse --short HEAD)"
-
-            if [ "$REPO_NAME" = "app" ] || [ "$REPO_NAME" = "admin" ]; then
-              echo "Building Next.js..."
-              npm ci
-              npm run build
-
-              if [ "$REPO_NAME" = "app" ]; then
-                echo "Restarting PM2: next-app"
-                pm2 restart next-app --update-env
-              else
-                echo "Restarting PM2: next-admin"
-                pm2 restart next-admin --update-env
               fi
-
-              echo "PM2 status:"
-              pm2 list
-            fi
-
-            if [ "$REPO_NAME" = "api" ]; then
-              echo "Deploying API (PHP/Laravel style)..."
-              composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
-
-              if [ -f artisan ]; then
-                php artisan migrate --force
-                php artisan config:cache
-                php artisan route:cache || true
-                php artisan view:cache || true
+  
+              exec 9>"$LOCK"
+              flock -n 9 || { echo "Deploy already running for $REPO_NAME"; exit 1; }
+  
+              cd "$APP_DIR"
+  
+              echo "Updating code..."
+              git fetch origin main
+              git reset --hard origin/main
+              echo "Now at: $(git rev-parse --short HEAD)"
+  
+              if [ "$REPO_NAME" = "estato-app" ] || [ "$REPO_NAME" = "estato-admin" ]; then
+                echo "Building Next.js..."
+                npm ci
+                npm run build
+  
+                if [ "$REPO_NAME" = "estato-app" ]; then
+                  echo "Restarting PM2: next-app"
+                  pm2 restart next-app --update-env
+                else
+                  echo "Restarting PM2: next-admin"
+                  pm2 restart next-admin --update-env
+                fi
+  
+                pm2 list
               fi
-
-              echo "API deploy done (nginx/php-fpm will serve new code)."
-            fi
-
-            echo "Deploy finished: $(date)"
-          '
+  
+              if [ "$REPO_NAME" = "estato-api" ]; then
+                echo "Deploying API..."
+                composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+  
+                if [ -f artisan ]; then
+                  php artisan migrate --force
+                  php artisan config:cache
+                  php artisan route:cache || true
+                  php artisan view:cache || true
+                fi
+  
+                echo "API deploy done."
+              fi
+  
+              echo "Deploy finished: $(date)"
+            '
