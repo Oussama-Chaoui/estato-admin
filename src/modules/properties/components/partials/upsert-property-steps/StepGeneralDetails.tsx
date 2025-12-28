@@ -1,4 +1,11 @@
-import React, { forwardRef, useImperativeHandle, useEffect, useMemo, useState } from 'react';
+import React, {
+  forwardRef,
+  useImperativeHandle,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+} from 'react';
 import {
   Box,
   MenuItem,
@@ -325,34 +332,42 @@ const StepGeneralDetails = forwardRef<FormStepRef, FormStepProps>((props, ref) =
     },
   });
 
+  // Track previous data to only reset when values actually change
+  const previousDataRef = useRef<string>();
+
   useEffect(() => {
-    methods.reset(
-      {
-        title: data?.title || { en: '', fr: '', es: '', ar: '' },
-        description: data?.description || { en: '', fr: '', es: '', ar: '' },
-        monthlyPrice: data?.monthlyPrice || 0,
-        dailyPrice: data?.dailyPrice || 0,
-        salePrice: data?.salePrice || 0,
-        currency: data?.currency || 'MAD',
-        yearBuilt: data?.yearBuilt || 0,
-        type: data?.type || ('' as PROPERTY_TYPE),
-        dailyPriceEnabled: data?.dailyPriceEnabled || false,
-        monthlyPriceEnabled: data?.monthlyPriceEnabled || false,
-        hasVR: data?.hasVR || false,
-        featured: data?.featured || false,
-        furnishingStatus: data?.furnishingStatus || FURNISHING_STATUS.UNFURNISHED,
-        // Features
-        features: data?.features || {
-          bedrooms: null,
-          bathrooms: null,
-          area: null,
-          garages: null,
-          floors: null,
+    const currentDataString = JSON.stringify(data);
+    // Only reset if data actually changed in value (not just reference)
+    if (previousDataRef.current !== currentDataString) {
+      previousDataRef.current = currentDataString;
+      methods.reset(
+        {
+          title: data?.title || { en: '', fr: '', es: '', ar: '' },
+          description: data?.description || { en: '', fr: '', es: '', ar: '' },
+          monthlyPrice: data?.monthlyPrice || 0,
+          dailyPrice: data?.dailyPrice || 0,
+          salePrice: data?.salePrice || 0,
+          currency: data?.currency || 'MAD',
+          yearBuilt: data?.yearBuilt || 0,
+          type: data?.type || ('' as PROPERTY_TYPE),
+          dailyPriceEnabled: data?.dailyPriceEnabled || false,
+          monthlyPriceEnabled: data?.monthlyPriceEnabled || false,
+          hasVR: data?.hasVR || false,
+          featured: data?.featured || false,
+          furnishingStatus: data?.furnishingStatus || FURNISHING_STATUS.UNFURNISHED,
+          // Features
+          features: data?.features || {
+            bedrooms: null,
+            bathrooms: null,
+            area: null,
+            garages: null,
+            floors: null,
+          },
+          amenityIds: data?.amenityIds ?? [],
         },
-        amenityIds: data?.amenityIds ?? [],
-      },
-      { keepDefaultValues: true }
-    );
+        { keepDefaultValues: true }
+      );
+    }
   }, [data, methods]);
 
   // Watch for type changes to update features dynamically

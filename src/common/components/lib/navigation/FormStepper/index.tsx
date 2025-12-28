@@ -1,6 +1,6 @@
 import { Stack, SxProps, Theme, Step, StepButton, Stepper, StepLabel, Button } from '@mui/material';
 import { useRouter } from 'next/router';
-import { Ref, useEffect, useRef, useState } from 'react';
+import { Ref, useEffect, useRef, useState, useMemo } from 'react';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Routes from '@common/defs/routes';
@@ -187,10 +187,13 @@ const FormStepper = <FormData extends AnyObject, FORM_STEP_ID>({
     return isLastStep ? t('common:finish') : t('common:next');
   };
 
-  const mergedStepData = {
-    ...((initialData as AnyObject) || {}),
-    ...getAllData(),
-  };
+  const allData = getAllData();
+  const mergedStepData = useMemo(() => {
+    return {
+      ...((initialData as AnyObject) || {}),
+      ...allData,
+    };
+  }, [initialData, allData]);
 
   return (
     <Stack sx={sx} gap={4} p={2} flexDirection={vertical ? 'row' : 'column'} width="100%">
