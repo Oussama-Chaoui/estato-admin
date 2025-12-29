@@ -98,7 +98,8 @@
   "languages": {
     "french": "Français",
     "english": "Anglais",
-    "spanish": "Espagnol"
+    "spanish": "Espagnol",
+    "arabic": "Arabe"
   },
   "area_unit": "m²",
   "table_actions": {

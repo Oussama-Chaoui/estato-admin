@@ -4,6 +4,13 @@ import { Agent } from '@modules/agents/defs/types';
 import { ROLE } from '@modules/permissions/defs/types';
 import { Upload } from '@modules/uploads/defs/types';
 
+export enum LANGUAGE {
+  FRENCH = 'FRENCH',
+  ENGLISH = 'ENGLISH',
+  SPANISH = 'SPANISH',
+  ARABIC = 'ARABIC',
+}
+
 export interface User extends CrudObject {
   name: string;
   phone: string | null;

@@ -1,6 +1,6 @@
 import ApiRoutes from '@common/defs/api-routes';
 import { ROLE } from '@modules/permissions/defs/types';
-import { User } from '@modules/users/defs/types';
+import { User, LANGUAGE } from '@modules/users/defs/types';
 import useItems, { UseItems, UseItemsOptions, defaultOptions } from '@common/hooks/useItems';
 
 export interface CreateOneInput {
@@ -18,6 +18,7 @@ export interface CreateOneInput {
   bio?: string;
   agencyName?: string;
   agencyAddress?: string;
+  languages?: LANGUAGE[];
 
   nicNumber?: string;
   passport?: string;
@@ -38,6 +39,7 @@ export interface UpdateOneInput {
   bio?: string;
   agencyName?: string;
   agencyAddress?: string;
+  languages?: LANGUAGE[];
 
   nicNumber?: string;
   passport?: string;

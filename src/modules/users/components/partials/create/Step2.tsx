@@ -3,20 +3,38 @@ import {
   FormStepRef,
   StepComponent,
 } from '@common/components/lib/navigation/FormStepper';
-import { RHFTextField } from '@common/components/lib/react-hook-form';
+import { RHFTextField, RHFAutocomplete } from '@common/components/lib/react-hook-form';
 import CreateCrudItemForm from '@common/components/partials/CreateCrudItemForm';
 import { CurrentFormStepRef } from '@common/components/partials/UpsertCrudItemForm';
 import Routes from '@common/defs/routes';
 import { ROLE } from '@modules/permissions/defs/types';
-import { User } from '@modules/users/defs/types';
+import { User, LANGUAGE } from '@modules/users/defs/types';
 import useUsers, { CreateOneInput } from '@modules/users/hooks/api/useUsers';
 import { Grid, Typography, Box, CardContent, Chip, Stack } from '@mui/material';
-import { forwardRef, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as Yup from 'yup';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import PersonIcon from '@mui/icons-material/Person';
 import BusinessIcon from '@mui/icons-material/Business';
+import Image from 'next/image';
+
+// Language to country code mapping
+const LANGUAGE_COUNTRY_MAP: Record<LANGUAGE, string> = {
+  [LANGUAGE.FRENCH]: 'fr',
+  [LANGUAGE.ENGLISH]: 'us',
+  [LANGUAGE.SPANISH]: 'es',
+  [LANGUAGE.ARABIC]: 'ma',
+};
+
+const getLanguageCountryCode = (language: LANGUAGE): string => {
+  return LANGUAGE_COUNTRY_MAP[language] || 'us';
+};
+
+const getLanguageDisplayName = (language: LANGUAGE, t: (key: string) => string): string => {
+  const languageKey = language.toLowerCase();
+  return t(`common:languages.${languageKey}`) || language;
+};
 
 const CreateUserStep2 = forwardRef<FormStepRef, FormStepProps>(({ next, data }, ref) => {
   const formRef = useRef<CurrentFormStepRef>();
@@ -27,6 +45,8 @@ const CreateUserStep2 = forwardRef<FormStepRef, FormStepProps>(({ next, data }, 
   const hasClientRole = selectedRoles.includes(ROLE.CLIENT);
 
   const isEditing = Boolean(data?.id);
+
+  const languageOptions = useMemo(() => Object.values(LANGUAGE), []);
 
   const getSchema = () => {
     const baseSchema: Record<string, Yup.AnySchema> = {
@@ -82,6 +102,7 @@ const CreateUserStep2 = forwardRef<FormStepRef, FormStepProps>(({ next, data }, 
     bio: data?.bio || '',
     agencyName: data?.agencyName || '',
     agencyAddress: data?.agencyAddress || '',
+    languages: (data?.languages as LANGUAGE[]) || [],
     nicNumber: data?.nicNumber || '',
     passport: data?.passport || '',
   };
@@ -239,6 +260,79 @@ const CreateUserStep2 = forwardRef<FormStepRef, FormStepProps>(({ next, data }, 
                       rows={4}
                       fullWidth
                       placeholder={t('user:step2.fields.bio_placeholder')}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <RHFAutocomplete
+                      name="languages"
+                      label={t('user:step2.fields.languages')}
+                      multiple
+                      disableCloseOnSelect
+                      options={languageOptions}
+                      fullWidth
+                      getOptionLabel={(option) => getLanguageDisplayName(option as LANGUAGE, t)}
+                      isOptionEqualToValue={(opt, val) => opt === val}
+                      renderOption={(props, option) => {
+                        const language = option as LANGUAGE;
+                        const countryCode = getLanguageCountryCode(language);
+                        return (
+                          <li
+                            {...props}
+                            style={{
+                              padding: '8px 16px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 12,
+                            }}
+                          >
+                            <Image
+                              src={`https://flagcdn.com/w20/${countryCode}.png`}
+                              alt={`${language} flag`}
+                              width={20}
+                              height={15}
+                              style={{ borderRadius: '2px', flexShrink: 0 }}
+                            />
+                            <Typography>{getLanguageDisplayName(language, t)}</Typography>
+                          </li>
+                        );
+                      }}
+                      renderTags={(selected, getTagProps) =>
+                        selected.map((option, index) => {
+                          const language = option as LANGUAGE;
+                          const countryCode = getLanguageCountryCode(language);
+                          return (
+                            <Chip
+                              {...getTagProps({ index })}
+                              key={language}
+                              label={
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                  <Image
+                                    src={`https://flagcdn.com/w20/${countryCode}.png`}
+                                    alt={`${language} flag`}
+                                    width={16}
+                                    height={12}
+                                    style={{ borderRadius: '2px' }}
+                                  />
+                                  <Typography variant="body2">
+                                    {getLanguageDisplayName(language, t)}
+                                  </Typography>
+                                </Box>
+                              }
+                              size="small"
+                              sx={{
+                                m: 0.5,
+                                bgcolor: 'primary.lighter',
+                                '& .MuiChip-deleteIcon': {
+                                  color: 'primary.dark',
+                                },
+                              }}
+                            />
+                          );
+                        })
+                      }
+                      sx={{
+                        '& .MuiAutocomplete-inputRoot': { p: 0.75 },
+                      }}
                     />
                   </Grid>
                 </Grid>

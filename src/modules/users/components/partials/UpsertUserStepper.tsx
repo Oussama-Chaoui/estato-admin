@@ -10,7 +10,7 @@ import Routes from '@common/defs/routes';
 import Step1 from '@modules/users/components/partials/create/Step1';
 import Step2 from '@modules/users/components/partials/create/Step2';
 import useUsers, { CreateOneInput, UpdateOneInput } from '@modules/users/hooks/api/useUsers';
-import { User } from '@modules/users/defs/types';
+import { LANGUAGE, User } from '@modules/users/defs/types';
 import { ROLE } from '@modules/permissions/defs/types';
 
 enum UPSERT_USER_STEP_ID {
@@ -38,6 +38,7 @@ const mapUserToInput = (user: User): CreateOneInput => {
     bio: user.agent?.bio || '',
     agencyName: user.agent?.agencyName || '',
     agencyAddress: user.agent?.agencyAddress || '',
+    languages: (user.agent?.languages?.map((lang) => lang.name as LANGUAGE) || []) as LANGUAGE[],
     nicNumber: user.client?.nicNumber || '',
     passport: user.client?.passport || '',
   };
