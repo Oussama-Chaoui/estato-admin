@@ -469,7 +469,7 @@ const PropertyBookingCalendar: React.FC<PropertyBookingCalendarProps> = ({
                 />
                 <Stack direction="row" spacing={2}>
                   <RHFTextField
-                    label={t('property:booking_calendar.nicNumber')}
+                    label={t('property:booking_calendar.nic_number')}
                     name="nicNumber"
                     sx={{ flex: 1 }}
                     InputProps={{

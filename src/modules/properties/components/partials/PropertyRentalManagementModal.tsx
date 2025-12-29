@@ -118,6 +118,9 @@ const PropertyRentalManagementModal = ({ open, onClose, property }: Props) => {
           name: 'nic-or-passport',
           message: 'Either NIC number or passport is required',
           test(_value, context) {
+            if (!context.parent) {
+              return true;
+            }
             const { nicNumber, passport } = context.parent;
             const hasNic = nicNumber && nicNumber.trim() !== '';
             const hasPassport = passport && passport.trim() !== '';
@@ -143,6 +146,9 @@ const PropertyRentalManagementModal = ({ open, onClose, property }: Props) => {
                   name: 'end-date-after-start',
                   message: 'End date must be after start date',
                   test(value, context) {
+                    if (!context.parent) {
+                      return true;
+                    }
                     const { startDate } = context.parent;
                     if (!startDate || !value) {
                       return true;
@@ -663,7 +669,7 @@ const PropertyRentalManagementModal = ({ open, onClose, property }: Props) => {
                   </Alert>
                 )}
 
-                {!loading && !error && rentals.length === 0 && (
+                {!loading && !error && rentals.length === 0 && viewMode && (
                   <Box sx={{ p: 4, textAlign: 'center' }}>
                     <Typography variant="h6" color="text.secondary" gutterBottom>
                       {t('property:rental_management.no_bookings')}
@@ -681,7 +687,7 @@ const PropertyRentalManagementModal = ({ open, onClose, property }: Props) => {
                   </Box>
                 )}
 
-                {!loading && !error && rentals.length > 0 && (
+                {!loading && !error && (rentals.length > 0 || !viewMode) && (
                   <Box>
                     <AvailabilityDatePicker
                       property={{
@@ -706,34 +712,36 @@ const PropertyRentalManagementModal = ({ open, onClose, property }: Props) => {
                       onMonthChange={handleCalendarMonthChange}
                     />
 
-                    <Box sx={{ mt: 3 }}>
-                      <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                        {t('property:rental_management.rentals_for')}{' '}
-                        {currentCalendarMonth.format('MMMM YYYY')}
-                      </Typography>
+                    {rentals.length > 0 && (
+                      <Box sx={{ mt: 3 }}>
+                        <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+                          {t('property:rental_management.rentals_for')}{' '}
+                          {currentCalendarMonth.format('MMMM YYYY')}
+                        </Typography>
 
-                      {filteredRentals.length > 0 ? (
-                        <Stack spacing={1}>
-                          {filteredRentals.map((rental) => (
-                            <RentalCard
-                              key={rental.id}
-                              rental={rental}
-                              onEdit={handleEditRental}
-                              onDelete={handleDeleteRental}
-                              getStatusColor={getStatusColor}
-                              getStatusLabel={getStatusLabel}
-                              currency={property.currency}
-                            />
-                          ))}
-                        </Stack>
-                      ) : (
-                        <Box sx={{ py: 3, textAlign: 'center' }}>
-                          <Typography variant="body2" color="text.secondary">
-                            {t('property:rental_management.no_bookings_this_month')}
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
+                        {filteredRentals.length > 0 ? (
+                          <Stack spacing={1}>
+                            {filteredRentals.map((rental) => (
+                              <RentalCard
+                                key={rental.id}
+                                rental={rental}
+                                onEdit={handleEditRental}
+                                onDelete={handleDeleteRental}
+                                getStatusColor={getStatusColor}
+                                getStatusLabel={getStatusLabel}
+                                currency={property.currency}
+                              />
+                            ))}
+                          </Stack>
+                        ) : (
+                          <Box sx={{ py: 3, textAlign: 'center' }}>
+                            <Typography variant="body2" color="text.secondary">
+                              {t('property:rental_management.no_bookings_this_month')}
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
+                    )}
                   </Box>
                 )}
 
@@ -812,7 +820,7 @@ const PropertyRentalManagementModal = ({ open, onClose, property }: Props) => {
                           </Typography>
                           <Stack spacing={2} sx={{ mt: 2 }}>
                             <RHFTextField
-                              label={t('property:booking_calendar.nicNumber')}
+                              label={t('property:booking_calendar.nic_number')}
                               name="nicNumber"
                               InputProps={{
                                 startAdornment: (
