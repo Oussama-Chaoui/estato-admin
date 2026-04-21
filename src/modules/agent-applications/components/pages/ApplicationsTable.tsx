@@ -34,7 +34,7 @@ interface Row {
 const ApplicationsTable = () => {
   const { t } = useTranslation(['common', 'agent-applications']);
   const { can } = usePermissions();
-  const { updateOne } = useAgentApplications();
+  const { patchOne } = useAgentApplications();
   const theme = useTheme();
   const namespace = Namespaces.AgentApplications;
 
@@ -184,7 +184,7 @@ const ApplicationsTable = () => {
     label: t('agent-applications:actions.approve'),
     icon: <CheckCircle sx={{ fontSize: 18 }} />,
     onClick: async (id, item, refreshRows) => {
-      const response = await updateOne(id, { status: AGENT_APPLICATION_STATUS.APPROVED });
+      const response = await patchOne(id, { status: AGENT_APPLICATION_STATUS.APPROVED });
       if (response.success) {
         refreshRows();
       }
@@ -200,7 +200,7 @@ const ApplicationsTable = () => {
     label: t('agent-applications:actions.reject'),
     icon: <Cancel sx={{ fontSize: 18 }} />,
     onClick: async (id, item, refreshRows) => {
-      const response = await updateOne(id, { status: AGENT_APPLICATION_STATUS.REJECTED });
+      const response = await patchOne(id, { status: AGENT_APPLICATION_STATUS.REJECTED });
       if (response.success) {
         refreshRows();
       }
@@ -216,7 +216,7 @@ const ApplicationsTable = () => {
     label: t('agent-applications:actions.mark_as_pending'),
     icon: <Pending sx={{ fontSize: 18 }} />,
     onClick: async (id, item, refreshRows) => {
-      const response = await updateOne(id, { status: AGENT_APPLICATION_STATUS.PENDING });
+      const response = await patchOne(id, { status: AGENT_APPLICATION_STATUS.PENDING });
       if (response.success) {
         refreshRows();
       }
